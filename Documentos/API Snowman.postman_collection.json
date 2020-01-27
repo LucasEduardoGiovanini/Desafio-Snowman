@@ -1,0 +1,706 @@
+{
+	"info": {
+		"_postman_id": "73a25931-46d4-4b59-8c08-6b3ec7eea3ed",
+		"name": "API Snowman",
+		"description": "Testes e requisições para a API teste da Snowman. ",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Mostrar todos os pontos turisticos existentes no banco",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f755395a-6b78-4ee2-b309-e193ed993d91",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/seealltouristspot",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"seealltouristspot"
+					]
+				},
+				"description": "deve retornar todos os pontos turisticos"
+			},
+			"response": []
+		},
+		{
+			"name": "Lista de pontos turisticos num raio de  5km a partir de um local dado",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a123d447-53cb-4846-8923-72b2cc3a3a73",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\t\n\t\"login\":\"lucas_giovanini\",\n\t\"senha\":\"lucasgiovanini\",\n\t\"lat\": -25.511103,\n\t\"long\": -49.295894\n\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/touristSpot5KM",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"touristSpot5KM"
+					]
+				},
+				"description": "deve retornar uma lista com todos os pontos em um raio de 5km. Incluindo Nome do ponto, categoria, latitude, longitude e distância"
+			},
+			"response": []
+		},
+		{
+			"name": "buscar um ponto turístico pelo nome",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5adf9714-a3c9-47b5-b8a2-8b2a0b472231",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\n\t\"spot\":\"parque zumbi\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/touristSpotName",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"touristSpotName"
+					]
+				},
+				"description": "deve retornar a categoria,nome,latitude e longitude com base no nome dado"
+			},
+			"response": []
+		},
+		{
+			"name": "registrar um ponto turistico",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e93b52f3-61ec-4139-9edd-f2be4b28e5cf",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"login\" : \"lucas_giovanini\",\n\t\"senha\":\"lucasgiovanini\",\n\t\"nome\":\"praça da espanha\",\n\t\"latitude\": 22,\n\t\"longitude\": 23,\n\t\"categoria\":\"parque\"\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/registertouristspot",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"registertouristspot"
+					]
+				},
+				"description": "deve retornar uma mensagem de confirmação após o usuário inserir login, senha, nome, latitude, longitude e uma categoria válida."
+			},
+			"response": []
+		},
+		{
+			"name": "registrar um ponto turistico permitindo criar a categoria caso não exista",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a5687a03-b2a5-4fc7-9a22-1bddc7c2e653",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"login\" : \"lucas_giovanini\",\n\t\"senha\":\"lucasgiovanini\",\n\t\"nome\":\"Zoo de Curitiba\",\n\t\"latitude\": 22,\n\t\"longitude\": 23,\n\t\"categoria\":\"Zoológico\"\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/registertouristspot",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"registertouristspot"
+					]
+				},
+				"description": "deve retornar uma mensagem de sucesso na criação do ponto turistico após o usuário inserir login,senha,nome,latitude,longitude,categoria. diferente da outra request, essa tenta cadastrar uma categoria que não existia no banco, permitindo assim sua criação automática"
+			},
+			"response": []
+		},
+		{
+			"name": "comentar sobre um ponto turistico",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "1d8e4d63-9b8f-4e92-afdf-008f8cc9724f",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"nome\":\"parque zumbi\",\n\t\"comentario\":\"esse parque é muito bem equipado\",\n\t\"login\":\"lucas_giovanini\",\n\t\"senha\":\"lucasgiovanini\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/commenttouritspot",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"commenttouritspot"
+					]
+				},
+				"description": "Deve retornar uma mensagem de sucesso ao comentar. O usuário informa o nome do parque, comentario, login e senha."
+			},
+			"response": []
+		},
+		{
+			"name": "ver os comentarios sobre um ponto turístico.",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b26c1070-0590-40ab-ac6e-f92cbaf0bd30",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"nome\":\"parque zumbi\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/seecommenttouritspot",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"seecommenttouritspot"
+					]
+				},
+				"description": "deve retornar todos os comentários do ponto turístico informado pelo usuario."
+			},
+			"response": []
+		},
+		{
+			"name": "favoritar um ponto turistico",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "9fcaf0e4-6fe3-4900-9059-045a4b905c7d",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"nome\":\"parque barigui\",\n\t\"login\":\"lucas_giovanini\",\n\t\"senha\":\"lucasgiovanini\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/favoriteaspot",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"favoriteaspot"
+					]
+				},
+				"description": "deve retornar uma mensagem de sucesso após favoritar o ponto. O usuário deve inserir nome, login, e senha para tal"
+			},
+			"response": []
+		},
+		{
+			"name": "ver todos os pontos favoritados",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2dc7abd7-b2df-4ebc-869c-3e667119cf6f",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"login\":\"lucas_giovanini\",\n\t\"senha\":\"lucasgiovanini\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/seefavoritespot",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"seefavoritespot"
+					]
+				},
+				"description": "deve retornar todos os pontos favoritados daquele usuário. O usuário deve entrar com login e senha"
+			},
+			"response": []
+		},
+		{
+			"name": "remover um ponto favoritado",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "3f3e7db5-e4eb-480e-bbb5-3d0cca6e78a2",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"login\":\"lucas_giovanini\",\n\t\"senha\":\"lucasgiovanini\",\n\t\"nome\":\"parque zumbi\"\n\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/removefavoritespot",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"removefavoritespot"
+					]
+				},
+				"description": "deve retornar a mensagem de sucesso ao remover o ponto. O usuário entra com login, senha e nome do ponto a ser removido."
+			},
+			"response": []
+		},
+		{
+			"name": "registrar upvote em um ponto turístico",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "50bc975f-3390-41a8-828d-d8bcec0bb865",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\n\t\"login\":\"lucas_giovanini\",\n\t\"senha\":\"lucasgiovanini\",\n\t\"nome\":\"parque barigui\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/upvotespot",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"upvotespot"
+					]
+				},
+				"description": "deve retornar a mensagem de sucesso ao registrar o upvote. O usuário entra com login, senha e nome do ponto."
+			},
+			"response": []
+		},
+		{
+			"name": "ver todos os pontos turísticos criado por um usuário",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "6e48c77c-06cb-414c-98e1-cc11dc7b7772",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\n\t\"login\":\"lucas_giovanini\",\n\t\"senha\":\"lucasgiovanini\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/seetouristspotcreatedbyme",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"seetouristspotcreatedbyme"
+					]
+				},
+				"description": "retorna todos os pontos turísticos de um usuário. O usuário entra com login e senha."
+			},
+			"response": []
+		},
+		{
+			"name": "criar uma nova categoria",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "432bae76-35e1-4770-bf35-c7c02e0c2f1c",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code===200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\n\t\"login\":\"lucas_giovanini\",\n\t\"senha\":\"lucasgiovanini\",\n\t\"categoria\":\"praia\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/users/createnewcategorie",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"createnewcategorie"
+					]
+				},
+				"description": "deve retornar a mensagem de sucesso na criação. O usuário entra com login, senha e nome da categoria"
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
