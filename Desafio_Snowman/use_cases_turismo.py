@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify,app
+from flask import Flask, request, jsonify,app #importo a app que é a primeira classe que irá rodar
 import pymysql
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
 from entities import dbconnection,verifica_login
@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run() #rodo a classe app
 
 
 @app.route("/", methods=['POST'])
