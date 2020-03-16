@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify,app
 import pymysql
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
-from entities import dbconnection
+from entities import dbconnection,verifica_login
 
 use_cases_turismo = Flask(__name__)
 
