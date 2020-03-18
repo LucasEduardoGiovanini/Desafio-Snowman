@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify,app #importo a app que é a primeira c
 import pymysql
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
 from entities import dbconnection,verifica_login
+from tests import *
 
 use_cases_turismo = Flask(__name__)
 
@@ -13,7 +14,9 @@ if __name__ == "__main__":
 
 
 @app.route("/", methods=['POST'])
-def inicial():
+def inicial():#passo todos os meus testes
+
+
     return "Inicial", 400  # status code http
 
 
@@ -73,7 +76,9 @@ def pontos_turisticos_5km():
             return jsonify({'resultado':dado}), 200  # status code http
 
 
-@app.route("/users/touristSpotName", methods=['GET'])  # rota para enviar um ponto turistico com base no nome
+
+
+@app.route("/users/touristSpotName", methods=['GET'])  # decorator para enviar um ponto turistico com base no nome
 def pontos_turisticos_por_nome():
     data = request.json  # solicita o json enviado pelo postman
     ponto = data.get('spot')  # pega o valor seguido se spot

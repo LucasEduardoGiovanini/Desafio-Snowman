@@ -1,0 +1,3 @@
+[console_scripts]
+pyhttptest = pyhttptest.cli:main
+
