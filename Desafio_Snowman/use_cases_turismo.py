@@ -95,6 +95,10 @@ def pontos_turisticos_por_nome():
 @app.route("/users/registertouristspot", methods=['POST'])  # rota para enviar um ponto turistico com base no nome
 def registrar_ponto_turistico():
     data = request.json  # solicita o json enviado pelo postman
+    return registrar_ponto_turistico_logica(data)
+
+
+def registrar_ponto_turistico_logica(data):
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
     nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
@@ -107,32 +111,38 @@ def registrar_ponto_turistico():
     if (autenticacao == False):
         return jsonify({'messege': 'login ou senha incorretos'}), 404
     else:
-        cursor[0].execute("SELECT nome FROM tbPontoTuristico WHERE nome = '{}'".format(nome_ponto)) #realizo uma busca para conferir se o ponto a ser cadastrado já existe
+        tupple = (email_usuario,nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto) #a minha variavel tupla armazena todos os valores que serão passados como parâmetro na query
+        cursor[0].execute("SELECT nome FROM tbPontoTuristico WHERE nome = %s",tupple[1])  # realizo uma busca para conferir se o ponto a ser cadastrado já existe
         resultado = cursor[0].fetchall()
-        if(not resultado): #se o ponto não existir, permito a criação
-            cursor[0].execute("SELECT cod FROM tbCategorias WHERE nome = '{}'".format(categoria_ponto)) #primeiro faço uma busca para ver se a categoria indicada existe
+        if (not resultado):  # se o ponto não existir, permito a criação
+
+            cursor[0].execute("SELECT cod FROM tbCategorias WHERE nome = %s",tupple[4])  # primeiro faço uma busca para ver se a categoria indicada existe
             resultado = cursor[0].fetchall();
 
-            if (not resultado): #se a categoria informada não existir
+            if (not resultado):  # se a categoria informada não existir
 
-                cursor[0].execute("INSERT INTO  tbCategorias (nome) VALUES('{}')".format(categoria_ponto))
-                cursor[1].commit() #inserção da categoria no banco
-                cursor[0].execute("SELECT cod FROM tbCategorias WHERE nome = '{}'".format(categoria_ponto))  # pego o nome da categoria recém criada para poder continuar o processo e registrar o ponto
-                resultado = cursor[0].fetchall(); #armazeno o noem da categoria nova, o que me permitirá entrar no elif da criação
+                cursor[0].execute("INSERT INTO  tbCategorias (nome) VALUES(%s)",tupple[4])
+                cursor[1].commit()  # inserção da categoria no banco
+                cursor[0].execute("SELECT cod FROM tbCategorias WHERE nome = %s",tupple[4])  # pego o nome da categoria recém criada para poder continuar o processo e registrar o ponto
+                resultado = cursor[
+                    0].fetchall();  # armazeno o noem da categoria nova, o que me permitirá entrar no elif da criação
                 jsonify({'Mensagem': 'categoria criada com sucesso!'})  # status code http
 
-            elif (resultado): #se resultado tiver um valor
-                cursor[0].execute("SELECT cod FROM tbCategorias WHERE nome = '{}'".format(categoria_ponto))
+            elif (resultado):  # se resultado tiver um valor
+                cursor[0].execute("SELECT cod FROM tbCategorias WHERE nome = %s",tupple[4])
                 resultado = cursor[0].fetchall()
-                for x in resultado: #preciso do for para ler o conjunto de jsons. Ele fará apenas um loop, pois não existe mais de uma categoria com o mesmo nome
-                    cursor[0].execute("INSERT INTO tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) VALUES ('{}',{},{},{},'{}')".format(nome_ponto, int(x['cod']), latitude_ponto, longitude_ponto, email_usuario))
+                for x in resultado:  # preciso do for para ler o conjunto de jsons. Ele fará apenas um loop, pois não existe mais de uma categoria com o mesmo nome
+                    touppleAux=(int(x['cod']),) #crio essa tupla apenas para lidar com o X
+                    cursor[0].execute(
+                        "INSERT INTO tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) VALUES ('{}',{},{},{},'{}')".format( #não consegui passar no formato tupla
+                            nome_ponto, int(x['cod']), latitude_ponto, longitude_ponto, email_usuario))
                     cursor[1].commit()
-                cursor[0].execute("INSERT INTO tbUpvote(nome,quantidade_upvote) VALUES ('{}',0)".format(nome_ponto))  # assim que o ponto turistico é registrado, ja é criado uma respectiva tabela em upvote
+                cursor[0].execute("INSERT INTO tbUpvote(nome,quantidade_upvote) VALUES (%s,0)",tupple[1])  # assim que o ponto turistico é registrado, ja é criado uma respectiva tabela em upvote
                 cursor[1].commit()
             return jsonify({'messege': 'ponto cadastrado com sucesso!'}), 200
-        else: #se o ponto existir, retorno uma mensagem que impossibilita a criação
+        else:  # se o ponto existir, retorno uma mensagem que impossibilita a criação
 
-            return jsonify({'message':'esse ponto já foi cadastrado!'}),403 #proibido
+            return jsonify({'message': 'esse ponto já foi cadastrado!'}), 403  # proibido
 
 
 @app.route("/users/commenttouritspot", methods=['POST'])  # rota para enviar um ponto turistico com base no nome
