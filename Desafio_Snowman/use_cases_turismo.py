@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify,app #importo a app que é a primeira c
 import pymysql
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
 from entities import *
-from tests import *
+
 
 use_cases_turismo = Flask(__name__)
 
@@ -32,7 +32,7 @@ def pontos_turisticos_5km_logica(data):
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
 
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
+    database = dbconnection()  # atribuo ao cursor a conexão com o banco
     autenticacao = verifica_login(email_usuario, senha_usuario)
     if (autenticacao == False):
         return jsonify({'messege': 'login ou senha incorretos'}), 404
@@ -78,11 +78,13 @@ def registrar_ponto_turistico_logica(data):
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
     nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
+    imagem_ponto = data.get('imagem')
     latitude_ponto = data.get('latitude')
     longitude_ponto = data.get('longitude')
     categoria_ponto = data.get('categoria')
+
     categoria_ponto = categoria_ponto.lower().capitalize()
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
+    cursor = dbconnection() # atribuo ao cursor a conexão com o banco
     autenticacao = verifica_login(email_usuario, senha_usuario)
     if (autenticacao == False):
         return jsonify({'messege': 'login ou senha incorretos'}), 404

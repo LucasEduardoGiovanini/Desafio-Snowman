@@ -2,15 +2,13 @@ from flask import Flask, request, jsonify, app
 import pymysql
 from use_cases_turismo import *
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
-
 import pymysql
 
 entites = Flask(__name__)
 
 app = Flask(__name__)
 
-if __name__ == "__main__":
-    entites.run()
+
 
 def dbconnection():  # def responsável pela conexão com mysql
     connection = pymysql.connect(host='localhost',
@@ -33,12 +31,12 @@ def verifica_login(email_usuario,senha_usuario): #verifico se ele é um usuario 
         return True
 
 
-def register_image(path):
+def convert_image(path): #pega a imagem e converte em binário para que possa ser inserida no banco
+    with open(path,'rb') as file:
+        binaryPhoto = file.read()
+    return binaryPhoto
+
     
-
-
-
-
 
 @app.route("/", methods=['POST'])
 def inicial():#passo todos os meus testes
