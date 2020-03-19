@@ -1,23 +1,16 @@
 from flask import Flask, request, jsonify,app #importo a app que é a primeira classe que irá rodar
 import pymysql
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
-from entities import dbconnection,verifica_login
+from entities import *
 from tests import *
 
 use_cases_turismo = Flask(__name__)
 
-app = Flask(__name__)
+
 
 
 if __name__ == "__main__":
     app.run() #rodo a classe app
-
-
-@app.route("/", methods=['POST'])
-def inicial():#passo todos os meus testes
-
-
-    return "Inicial", 400  # status code http
 
 
 def haversine(lon1, lat1, lon2, lat2):  # def que aplica a formula de haversine para encontrar pontos num raio de 5km
@@ -32,23 +25,6 @@ def haversine(lon1, lat1, lon2, lat2):  # def que aplica a formula de haversine 
     return c * r
 
 
-@app.route("/users/seealltouristspot", methods=['GET'])  #ver todos os pontos turisticos cadastrados
-def ver_todos_pontos():
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco #a variavel dispensavel n sera utilizada nessa def pois não necessitamos de seu retorno
-    cursor[0].execute("SELECT nome, categoria, latitude, longitude FROM tbPontoTuristico")  # faço uma busca no banco pelo ponto turistico informado
-    resultado = cursor[0].fetchall()  # comando que faz a busca por toda a informação da tabela
-    if(not resultado):
-        return jsonify({'message':'nao existem pontos cadastrados'}),404
-    else:
-        return jsonify({'message':resultado}), 200  # status code http
-
-
-
-
-@app.route("/users/touristSpot5KM", methods=['GET'])  # rota para enviar um ponto turistico com base no nome
-def pontos_turisticos_5km():
-    data = request.json  # solicita o json enviado pelo postman
-    return pontos_turisticos_5km_logica(data)
 
 def pontos_turisticos_5km_logica(data):
     latitude_usuario = data.get('lat')  # pega o valor seguido se spot
@@ -82,15 +58,6 @@ def pontos_turisticos_5km_logica(data):
 
 
 
-
-
-
-
-@app.route("/users/touristSpotName", methods=['GET'])  # decorator para enviar um ponto turistico com base no nome
-def pontos_turisticos_por_nome():
-    data = request.json  # solicita o json enviado pelo postman
-    return pontos_turisticos_por_nome_logica(data)
-
 def pontos_turisticos_por_nome_logica(data):
     ponto = data.get('spot')  # pega o valor seguido se spot
     tuple=(ponto,)
@@ -105,14 +72,6 @@ def pontos_turisticos_por_nome_logica(data):
 
 
 
-
-
-
-
-@app.route("/users/registertouristspot", methods=['POST'])  # rota para enviar um ponto turistico com base no nome
-def registrar_ponto_turistico():
-    data = request.json  # solicita o json enviado pelo postman
-    return registrar_ponto_turistico_logica(data)
 
 
 def registrar_ponto_turistico_logica(data):
@@ -162,14 +121,6 @@ def registrar_ponto_turistico_logica(data):
 
 
 
-
-
-
-@app.route("/users/commenttouritspot", methods=['POST'])  # rota para enviar um ponto turistico com base no nome
-def comentar_ponto_turistico():
-    data = request.json  # solicita o json enviado pelo postman
-    return comentar_ponto_turistico_logica(data)
-
 def comentar_ponto_turistico_logica(data):
     nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
     comentario_ponto = data.get('comentario')
@@ -197,14 +148,6 @@ def comentar_ponto_turistico_logica(data):
 
 
 
-
-
-@app.route("/users/seecommenttouritspot", methods=['GET'])  # rota para enviar um ponto turistico com base no nome
-def ver_comentarios_pontos_turisticos():
-    data = request.json  # solicita o json enviado pelo postman
-    return ver_comentario_ponto_turistico_logica(data)
-
-
 def ver_comentario_ponto_turistico_logica(data):
     nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
     cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
@@ -222,14 +165,6 @@ def ver_comentario_ponto_turistico_logica(data):
         for x in resultado:
             dado.append(x)
         return jsonify({'resultado': dado}), 200
-
-
-
-
-@app.route("/users/favoriteaspot", methods=['POST'])  # rota para enviar um ponto turistico com base no nome
-def favoritar_pontos_turisticos():
-    data = request.json  # solicita o json enviado pelo postman
-    return favoritar_ponto_turistico_logica(data)
 
 
 def favoritar_ponto_turistico_logica(data):
@@ -253,16 +188,6 @@ def favoritar_ponto_turistico_logica(data):
         return jsonify({'messege': 'ponto favoritado com sucesso!'}), 200  # status code http
 
 
-
-
-
-
-
-@app.route("/users/seefavoritespot", methods=['GET'])  # rota para enviar um ponto turistico com base no nome
-def ver_ponto_favorito():
-    data = request.json  # solicita o json enviado pelo postman
-    return ver_ponto_turistico_logica(data)
-
 def ver_ponto_turistico_logica(data):
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
@@ -281,15 +206,6 @@ def ver_ponto_turistico_logica(data):
 
         return jsonify({'Mensagem': 'sucesso! aqui estão seus pontos!', "ponto": resultado}), 200  # status code http
 
-
-
-
-
-
-@app.route("/users/removefavoritespot", methods=['DELETE'])  # rota para enviar um ponto turistico com base no nome
-def remover_ponto_favoritado():
-    data = request.json  # solicita o json enviado pelo postman
-    return remover_ponto_favoritado_logica(data)
 
 def remover_ponto_favoritado_logica(data):
     nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
@@ -315,19 +231,6 @@ def remover_ponto_favoritado_logica(data):
                 "DELETE FROM tbPontoFavoritado WHERE email = %s and nome=%s",(tuple[1],tuple[0]))
             cursor[1].commit()
         return jsonify({'messege': 'ponto removido com sucesso!'}), 200  # status code http
-
-
-
-
-
-
-
-
-
-@app.route("/users/upvotespot", methods=['POST'])  # rota para enviar um ponto turistico com base no nome
-def upvote_ponto():
-    data = request.json  # solicita o json enviado pelo postman
-    return upvote_ponto_logica(data)
 
 
 def upvote_ponto_logica(data):
@@ -362,20 +265,6 @@ def upvote_ponto_logica(data):
 
 
 
-
-
-
-
-
-
-
-
-
-@app.route("/users/seetouristspotcreatedbyme", methods=['GET'])  # rota para enviar um ponto turistico com base no nome
-def ver_pontos_criados_por_mim():
-    data = request.json  # solicita o json enviado pelo postman
-    return ver_pontos_criados_por_mim_logica(data)
-
 def ver_pontos_criados_por_mim_logica(data):
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
@@ -395,12 +284,6 @@ def ver_pontos_criados_por_mim_logica(data):
         return jsonify(
             {'Mensagem': 'sucesso! aqui estão os pontos que você criou!', "ponto": resultado}), 200  # status code http
 
-
-
-@app.route("/users/createnewcategorie", methods=['POST'])  # rota para enviar um ponto turistico com base no nome
-def criar_nova_categoria():
-    data = request.json  # solicita o json enviado pelo postman
-    return criar_nova_categoria_logica(data)
 
 def criar_nova_categoria_logica(data):
     email_usuario = data.get('login')
