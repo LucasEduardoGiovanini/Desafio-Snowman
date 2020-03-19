@@ -1,12 +1,10 @@
 from flask import Flask, request, jsonify,app #importo a app que é a primeira classe que irá rodar
+
 import pymysql
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
-from entities import *
 from tests import *
 
 use_cases_turismo = Flask(__name__)
-
-
 
 
 if __name__ == "__main__":
@@ -24,6 +22,24 @@ def haversine(lon1, lat1, lon2, lat2):  # def que aplica a formula de haversine 
     r = 6371
     return c * r
 
+def dbconnection():  # def responsável pela conexão com mysql
+    connection = pymysql.connect(host='localhost',
+                                 user='root',
+                                 password='lucasgiovanini',
+                                 db='DBturismo',
+                                 charset='utf8mb4',
+                                 cursorclass=pymysql.cursors.DictCursor)
+    cursor = connection.cursor()
+    return cursor, connection  # uso 2 returns pois algumas funções precisam fazer commit, e o commit só pode ser feito com o connection
+
+def verifica_login(email_usuario,senha_usuario): #verifico se ele é um usuario cadastrado, se for, retorno um true e permito que ele use o banco
+    cursor=dbconnection()
+    cursor[0].execute("SELECT email,senha  FROM tbUsuario WHERE email = '{}' and senha='{}'".format(email_usuario, senha_usuario))
+    resultado = cursor[0].fetchall()
+    if (not resultado):
+        return False
+    else:
+        return True
 
 
 def pontos_turisticos_5km_logica(data):

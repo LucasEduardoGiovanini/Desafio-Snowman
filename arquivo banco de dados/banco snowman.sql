@@ -1,3 +1,4 @@
+drop database DBturismo;
 create database DBturismo;
 use  DBturismo;
 
@@ -14,6 +15,7 @@ senha varchar(50)
 
 create table tbPontoTuristico(
 nome varchar(30) primary key,
+foto BLOB,
 categoria int,
 latitude double,
 longitude double,
