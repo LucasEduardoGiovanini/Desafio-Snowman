@@ -2,9 +2,7 @@ drop database DBturismo;
 create database DBturismo;
 use  DBturismo;
 
-create table tbImg(
-foto BLOB
-);
+
 create table tbCategorias(
 cod int primary key auto_increment,
 nome varchar(50)
@@ -26,6 +24,16 @@ criador_ponto varchar(100),
 foreign key(criador_ponto) references tbUsuario(email),
 foreign key(categoria) references tbCategorias(cod)
 );
+
+create table tbImagem_ponto(
+cod int PRIMARY KEY,
+foto BLOB,
+nome varchar(30),
+email varchar(100),
+foreign key (email)references tbUsuario(email),
+foreign key (nome) references tbPontoTuristico(nome)
+);
+
 
 create table tbPontoFavoritado(
 nome varchar(30),
@@ -78,3 +86,4 @@ select * from tbPontoFavoritado;
 select * from tbCategorias;
 select * from tbComentario;
 select*from tbUpvote;
+select * from tbImagem_ponto;
