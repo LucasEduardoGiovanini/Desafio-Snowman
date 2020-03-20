@@ -97,4 +97,3 @@ def criar_nova_categoria():
 
 
 
-"a camada de entidades contém as regras que tenham menos possibilidade de mudança"

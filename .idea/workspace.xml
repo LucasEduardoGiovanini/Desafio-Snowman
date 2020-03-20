@@ -23,7 +23,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Desafio_Snowman" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -36,10 +36,17 @@
       <option name="presentableId" value="Default" />
       <updated>1584371448325</updated>
       <workItem from="1584371449908" duration="27000" />
+      <workItem from="1584702311095" duration="28000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="549" y="167" key="FileChooserDialogImpl" timestamp="1584702337075">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="549" y="167" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1584702337075" />
   </component>
 </project>
