@@ -2,6 +2,9 @@ drop database DBturismo;
 create database DBturismo;
 use  DBturismo;
 
+create table tbImg(
+foto BLOB
+);
 create table tbCategorias(
 cod int primary key auto_increment,
 nome varchar(50)

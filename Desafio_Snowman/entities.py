@@ -97,3 +97,7 @@ def criar_nova_categoria():
 
 
 
+@app.route("/users/test", methods=['POST'])
+def testing_save_image():
+    data = request.json
+    return testing_save_image_logic(data)

@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify,app #importo a app que é a primeira classe que irá rodar
-
+from werkzeug.datastructures import FileStorage
 import pymysql
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
 from tests import *
@@ -27,7 +27,6 @@ def dbconnection():  # def responsável pela conexão com mysql
                                  user='root',
                                  password='lucasgiovanini',
                                  db='DBturismo',
-                                 charset='utf8mb4',
                                  cursorclass=pymysql.cursors.DictCursor)
     cursor = connection.cursor()
     return cursor, connection  # uso 2 returns pois algumas funções precisam fazer commit, e o commit só pode ser feito com o connection
@@ -40,6 +39,23 @@ def verifica_login(email_usuario,senha_usuario): #verifico se ele é um usuario 
         return False
     else:
         return True
+
+def convert_image_to_binary(path):
+    with open(path, 'rb') as f:
+        binaryPhoto = f.read()
+        return binaryPhoto
+
+
+
+def testing_save_image_logic(data):
+    imagem = request.files['imagem'] #solicito uma imagem
+    path = imagem.read() #
+    print(path)
+    cursor = dbconnection()
+
+    t = (path,)
+    cursor[0].execute( "INSERT INTO tbPontoTuristico (foto) VALUES (%s)",t)
+    cursor[1].commit()
 
 
 def pontos_turisticos_5km_logica(data):
