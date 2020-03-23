@@ -23,6 +23,7 @@ def inicial():#passo todos os meus testes
 
 @app.route("/users/seealltouristspot", methods=['GET'])  #ver todos os pontos turisticos cadastrados
 def ver_todos_pontos():
+
     cursor = dbconnection()  # atribuo ao cursor a conexão com o banco #a variavel dispensavel n sera utilizada nessa def pois não necessitamos de seu retorno
     cursor[0].execute("SELECT nome, categoria, latitude, longitude FROM tbPontoTuristico")  # faço uma busca no banco pelo ponto turistico informado
     resultado = cursor[0].fetchall()  # comando que faz a busca por toda a informação da tabela
@@ -32,6 +33,7 @@ def ver_todos_pontos():
         return jsonify({'message':resultado}), 200  # status code http
 
 
+
 @app.route("/users/touristSpot5KM", methods=['GET'])  # rota para enviar um ponto turistico com base no nome
 def pontos_turisticos_5km():
     data = request.json  # solicita o json enviado pelo postman
@@ -39,8 +41,10 @@ def pontos_turisticos_5km():
 
 
 
+
 @app.route("/users/touristSpotName", methods=['GET'])  # decorator para enviar um ponto turistico com base no nome
 def pontos_turisticos_por_nome():
+
     data = request.json  # solicita o json enviado pelo postman
     return pontos_turisticos_por_nome_logica(data)
 
@@ -69,26 +73,26 @@ def ver_comentarios_pontos_turisticos():
     return ver_comentario_ponto_turistico_logica(data)
 
 @app.route("/users/addpicturespot", methods=['POST'])
-def add_picture_tourist_spot():
+def adicionar_foto_ponto():
     data = request.json
-    return add_picture_tourist_spot_logica(data)
+    return adicionar_foto_ponto_logica(data)
 
 
 @app.route("/users/detepicturespot", methods=['DELETE'])
-def remove_picture_tourist_spot_():
+def remover_foto_ponto():
     data=request.json
-    return remove_picture_tourist_spot_logica(data)
+    return remover_foto_ponto_logica(data)
 
 @app.route("/users/favoriteaspot", methods=['POST'])  # rota para enviar um ponto turistico com base no nome
-def favoritar_pontos_turisticos():
+def favoritar_ponto_turistico():
     data = request.json  # solicita o json enviado pelo postman
     return favoritar_ponto_turistico_logica(data)
 
 
 @app.route("/users/seefavoritespot", methods=['GET'])  # rota para enviar um ponto turistico com base no nome
-def ver_ponto_favorito():
+def ver_ponto_turistico_favorito():
     data = request.json  # solicita o json enviado pelo postman
-    return ver_ponto_turistico_logica(data)
+    return ver_ponto_turistico_favoritado_logica(data)
 
 @app.route("/users/removefavoritespot", methods=['DELETE'])  # rota para enviar um ponto turistico com base no nome
 def remover_ponto_favoritado():

@@ -121,7 +121,6 @@ def cadastrar_imagem_ponto(imagem):
 
 
 def registrar_ponto_turistico_logica(data):
-    print("fruta")
 
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
@@ -130,11 +129,11 @@ def registrar_ponto_turistico_logica(data):
     longitude_ponto = data.get('longitude')
     categoria_ponto = data.get('categoria')
     foto_ponto = data.get('foto')
-    print("fruta")
+
 
     # picture decode (base 64) -------------------------------------------
     decode_picture = base64.b64decode(foto_ponto) #recebo a foto em base 64 e dou um decode
-    print(decode_picture)
+
     #---------------
 
     categoria_ponto = categoria_ponto.lower().capitalize()
@@ -230,20 +229,20 @@ def ver_comentario_ponto_turistico_logica(data):
 
 
 
-def add_picture_tourist_spot_logica(data):
+def adicionar_foto_ponto_logica(data):
     login_usuario = data.get('login')
     senha_usuario = data.get('senha')
     nome_ponto = data.get('nome')
     foto_ponto = data.get('foto')
     decode_picture = base64.b64decode(foto_ponto)  # recebo a foto em base 64 e dou um decode
-    print(decode_picture)
+
 
     tuple = (login_usuario,senha_usuario,nome_ponto,decode_picture)
     cursor = dbconnection()
     cursor[0].execute("SELECT nome  FROM tbPontoTuristico WHERE nome = %s",tuple[2]) #verifico se o ponto existe
     resultado = cursor[0].fetchall()
     if not resultado:
-        return jsonify({'messege': 'o ponto informado não existe!'}), 404
+        return jsonify({'messege': 'o ponto informado não existe!'}), 403
     else:
         autenticador = verifica_login(tuple[0],tuple[1])
         if autenticador== False:
@@ -254,7 +253,7 @@ def add_picture_tourist_spot_logica(data):
         return jsonify({'messege':'foto cadastrada com sucesso!'}), 200  # status code http
 
 
-def remove_picture_tourist_spot_logica(data):
+def remover_foto_ponto_logica(data):
     login_usuario = data.get('login')
     senha_usuario = data.get('senha')
     cod_foto = data.get('cod_foto')
@@ -298,7 +297,7 @@ def favoritar_ponto_turistico_logica(data):
         return jsonify({'messege': 'ponto favoritado com sucesso!'}), 200  # status code http
 
 
-def ver_ponto_turistico_logica(data):
+def ver_ponto_turistico_favoritado_logica(data):
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
     tuple=(email_usuario,senha_usuario)
