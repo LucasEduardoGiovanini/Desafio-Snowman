@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from entities import app
+from api import app
 
 
 if __name__ == "__main__":
