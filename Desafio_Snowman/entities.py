@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, app
 from use_cases_turismo import *
+
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
 
 import pymysql
@@ -46,7 +47,13 @@ def pontos_turisticos_por_nome():
 
 @app.route("/users/registertouristspot", methods=['POST'])  # rota para enviar um ponto turistico com base no nome
 def registrar_ponto_turistico():
+    '''imagem = request.files['imagem'] #exemplo de como ler uma imagem que vem pelo form-data do postman
+    path = imagem.read()
+    cadastrar_imagem_ponto(path)'''
+
     data = request.json  # solicita o json enviado pelo postman
+
+
     return registrar_ponto_turistico_logica(data)
 
 
@@ -61,6 +68,16 @@ def ver_comentarios_pontos_turisticos():
     data = request.json  # solicita o json enviado pelo postman
     return ver_comentario_ponto_turistico_logica(data)
 
+@app.route("/users/addpicturespot", methods=['POST'])
+def add_picture_tourist_spot():
+    data = request.json
+    return add_picture_tourist_spot_logica(data)
+
+
+@app.route("/users/detepicturespot", methods=['DELETE'])
+def remove_picture_tourist_spot_():
+    data=request.json
+    return remove_picture_tourist_spot_logica(data)
 
 @app.route("/users/favoriteaspot", methods=['POST'])  # rota para enviar um ponto turistico com base no nome
 def favoritar_pontos_turisticos():
@@ -97,3 +114,7 @@ def criar_nova_categoria():
 
 
 
+@app.route("/users/test", methods=['POST'])
+def testing_save_image():
+    data = request.json
+    return testing_save_image_logic(data)

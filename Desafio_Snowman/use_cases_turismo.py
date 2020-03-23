@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify,app #importo a app que é a primeira classe que irá rodar
-
+from werkzeug.datastructures import FileStorage
 import pymysql
+import base64
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
 from tests import *
+import random
 
 use_cases_turismo = Flask(__name__)
 
@@ -27,7 +29,6 @@ def dbconnection():  # def responsável pela conexão com mysql
                                  user='root',
                                  password='lucasgiovanini',
                                  db='DBturismo',
-                                 charset='utf8mb4',
                                  cursorclass=pymysql.cursors.DictCursor)
     cursor = connection.cursor()
     return cursor, connection  # uso 2 returns pois algumas funções precisam fazer commit, e o commit só pode ser feito com o connection
@@ -40,6 +41,31 @@ def verifica_login(email_usuario,senha_usuario): #verifico se ele é um usuario 
         return False
     else:
         return True
+
+def convert_image_to_binary(path):
+    with open(path, 'rb') as f:
+        binaryPhoto = f.read()
+        return binaryPhoto
+
+
+
+def testing_save_image_logic(data):
+    imagem = request.files['imagem'] #solicito uma imagem
+    path = imagem.read() #leo a imagem em binario
+    print(path)
+
+    cursor = dbconnection()
+
+    t = (path,)
+    cursor[0].execute( "INSERT INTO tbImg (foto) VALUES (%s)",t)
+    cursor[1].commit()
+
+def escreve_imagem(data):
+    for x in data:
+        imagem = x['foto']
+        nome_foto = x['nome'] + str(x['cod'])
+        with open('C:/Users/lucas/Desktop/photo test/'+nome_foto+'.png', 'wb') as q:
+            q.write(imagem)
 
 
 def pontos_turisticos_5km_logica(data):
@@ -88,22 +114,36 @@ def pontos_turisticos_por_nome_logica(data):
 
 
 
+def cadastrar_imagem_ponto(imagem):
+    cursor = dbconnection()
+    cursor[0].execute("INSERT INTO tbImagem_ponto (foto) VALUES (%s)", imagem)
+    cursor[1].commit()
 
 
 def registrar_ponto_turistico_logica(data):
+    print("fruta")
+
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
-    nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
+    nome_ponto = data.get('nome')
     latitude_ponto = data.get('latitude')
     longitude_ponto = data.get('longitude')
     categoria_ponto = data.get('categoria')
+    foto_ponto = data.get('foto')
+    print("fruta")
+
+    # picture decode (base 64) -------------------------------------------
+    decode_picture = base64.b64decode(foto_ponto) #recebo a foto em base 64 e dou um decode
+    print(decode_picture)
+    #---------------
+
     categoria_ponto = categoria_ponto.lower().capitalize()
     cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
     autenticacao = verifica_login(email_usuario, senha_usuario)
     if (autenticacao == False):
         return jsonify({'messege': 'login ou senha incorretos'}), 404
     else:
-        tuple = (email_usuario,nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto) #a minha variavel tupla armazena todos os valores que serão passados como parâmetro na query
+        tuple = (email_usuario,nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,decode_picture) #a minha variavel tupla armazena todos os valores que serão passados como parâmetro na query
         cursor[0].execute("SELECT nome FROM tbPontoTuristico WHERE nome = %s",tuple[1])  # realizo uma busca para conferir se o ponto a ser cadastrado já existe
         resultado = cursor[0].fetchall()
         if (not resultado):  # se o ponto não existir, permito a criação
@@ -128,6 +168,12 @@ def registrar_ponto_turistico_logica(data):
                     cursor[0].execute(
                         "INSERT INTO tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) VALUES (%s,%s,%s,%s,%s)",(tuple[1], int(x['cod']), tuple[2], tuple[3], tuple[0]))
                     cursor[1].commit()
+
+                    #inserindo a imagem no banco -------------------------------------
+                    cursor[0].execute("INSERT INTO tbImagem_ponto(foto,nome,email) VALUES(%s,%s,%s)",(tuple[5],tuple[1],email_usuario))
+                    #--------------------------------------------
+
+
                 cursor[0].execute("INSERT INTO tbUpvote(nome,quantidade_upvote) VALUES (%s,0)",tuple[1])  # assim que o ponto turistico é registrado, ja é criado uma respectiva tabela em upvote
                 cursor[1].commit()
             return jsonify({'messege': 'ponto cadastrado com sucesso!'}), 200
@@ -183,6 +229,54 @@ def ver_comentario_ponto_turistico_logica(data):
         return jsonify({'resultado': dado}), 200
 
 
+
+def add_picture_tourist_spot_logica(data):
+    login_usuario = data.get('login')
+    senha_usuario = data.get('senha')
+    nome_ponto = data.get('nome')
+    foto_ponto = data.get('foto')
+    decode_picture = base64.b64decode(foto_ponto)  # recebo a foto em base 64 e dou um decode
+    print(decode_picture)
+
+    tuple = (login_usuario,senha_usuario,nome_ponto,decode_picture)
+    cursor = dbconnection()
+    cursor[0].execute("SELECT nome  FROM tbPontoTuristico WHERE nome = %s",tuple[2]) #verifico se o ponto existe
+    resultado = cursor[0].fetchall()
+    if not resultado:
+        return jsonify({'messege': 'o ponto informado não existe!'}), 404
+    else:
+        autenticador = verifica_login(tuple[0],tuple[1])
+        if autenticador== False:
+            return jsonify({'messege': 'login ou senha incorretos'}), 404
+        else:
+            cursor[0].execute("INSERT INTO tbImagem_ponto(foto,nome,email) VALUES(%s,%s,%s)", (tuple[3], tuple[2],tuple[0]))
+            cursor[1].commit()
+        return jsonify({'messege':'foto cadastrada com sucesso!'}), 200  # status code http
+
+
+def remove_picture_tourist_spot_logica(data):
+    login_usuario = data.get('login')
+    senha_usuario = data.get('senha')
+    cod_foto = data.get('cod_foto')
+
+    tuple = (login_usuario, senha_usuario, cod_foto)
+    cursor = dbconnection()
+    cursor[0].execute("SELECT cod  FROM tbImagem_ponto WHERE cod = %s and email = %s", (tuple[2],tuple[0]))  # verifico se o ponto existe
+    resultado = cursor[0].fetchall()
+    if not resultado:
+        return jsonify({'messege': 'foto não encontrada!'}), 404
+    else:
+        autenticador = verifica_login(tuple[0], tuple[1])
+        if autenticador == False:
+            return jsonify({'messege': 'login ou senha incorretos'}), 404
+        else:
+            cursor[0].execute("DELETE FROM tbImagem_ponto WHERE cod = %s and email=%s", (tuple[2],tuple[0]))
+            cursor[1].commit()
+        return jsonify({'messege': 'Foto deletada com sucesso!'}), 200  # status code http
+
+
+
+
 def favoritar_ponto_turistico_logica(data):
     nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
     email_usuario = data.get('login')
@@ -219,7 +313,10 @@ def ver_ponto_turistico_logica(data):
     else:
         cursor[0].execute("SELECT nome FROM tbPontoFavoritado WHERE email=%s",tuple[0])
         resultado = cursor[0].fetchall()
-
+        cursor[0].execute("SELECT foto,nome,cod FROM tbImagem_ponto")
+        fotos = cursor[0].fetchall()
+        escreve_imagem(fotos) #função que salva as imagens do banco numa pasta. o nome da imagem é o nome do ponto + o ID
+        print("polenta")
         return jsonify({'Mensagem': 'sucesso! aqui estão seus pontos!', "ponto": resultado}), 200  # status code http
 
 
@@ -296,6 +393,11 @@ def ver_pontos_criados_por_mim_logica(data):
         cursor[0].execute(
             "SELECT nome,categoria,latitude,longitude FROM tbPontoTuristico WHERE criador_ponto= %s",tuple[0])
         resultado = cursor[0].fetchall()
+
+        cursor[0].execute("SELECT foto,nome,cod FROM tbImagem_ponto WHERE email=%s",tuple[0])
+        fotos = cursor[0].fetchall()
+        print(len(fotos))
+        escreve_imagem(fotos)
         jsonify({'messege': 'ponto favoritado com sucesso!'})
         return jsonify(
             {'Mensagem': 'sucesso! aqui estão os pontos que você criou!', "ponto": resultado}), 200  # status code http
