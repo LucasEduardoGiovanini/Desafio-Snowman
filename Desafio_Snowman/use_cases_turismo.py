@@ -5,6 +5,7 @@ import base64
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
 from tests import *
 import random
+from repositories import PontoTuristicoRepository
 
 use_cases_turismo = Flask(__name__)
 
@@ -102,15 +103,13 @@ def pontos_turisticos_5km_logica(data):
 
 def pontos_turisticos_por_nome_logica(data):
     ponto = data.get('spot')  # pega o valor seguido se spot
-    tuple=(ponto,)
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco #a variavel dispensavel n sera utilizada nessa def pois não necessitamos de seu retorno
-    cursor[0].execute("SELECT nome, categoria, latitude, longitude FROM tbPontoTuristico WHERE nome = %s",tuple[0])  # faço uma busca no banco pelo ponto turistico informado
-    resultado = cursor[0].fetchall()  # comando que faz a busca por toda a informação da tabela
-    if(not resultado):
+    repository = PontoTuristicoRepository()
+    ponto = repository.get_ponto_turistico_by_name(ponto)
+    if(not ponto):
         return jsonify({'message':'O ponto informado não existe'}),404
     else:
 
-        return jsonify({'Pontos':resultado}), 200  # status code http
+        return jsonify({'Pontos':ponto}), 200  # status code http
 
 
 

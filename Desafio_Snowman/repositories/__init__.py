@@ -1,0 +1,1 @@
+from .ponto_turistico_repository import PontoTuristicoRepository
