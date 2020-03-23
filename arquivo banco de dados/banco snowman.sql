@@ -16,7 +16,6 @@ senha varchar(50)
 
 create table tbPontoTuristico(
 nome varchar(30) primary key,
-foto BLOB,
 categoria int,
 latitude double,
 longitude double,
@@ -26,13 +25,13 @@ foreign key(categoria) references tbCategorias(cod)
 );
 
 create table tbImagem_ponto(
-cod int PRIMARY KEY,
+cod int PRIMARY KEY auto_increment,
 foto BLOB,
 nome varchar(30),
 email varchar(100),
 foreign key (email)references tbUsuario(email),
 foreign key (nome) references tbPontoTuristico(nome)
-);
+)auto_increment = 1;
 
 
 create table tbPontoFavoritado(

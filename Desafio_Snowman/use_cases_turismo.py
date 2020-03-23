@@ -4,6 +4,7 @@ import pymysql
 import base64
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
 from tests import *
+import random
 
 use_cases_turismo = Flask(__name__)
 
@@ -52,12 +53,19 @@ def testing_save_image_logic(data):
     imagem = request.files['imagem'] #solicito uma imagem
     path = imagem.read() #leo a imagem em binario
     print(path)
-    print("bananinha: ",path)
+
     cursor = dbconnection()
 
     t = (path,)
     cursor[0].execute( "INSERT INTO tbImg (foto) VALUES (%s)",t)
     cursor[1].commit()
+
+def escreve_imagem(data):
+    for x in data:
+        imagem = x['foto']
+        nome_foto = x['nome'] + str(x['cod'])
+        with open('C:/Users/lucas/Desktop/photo test/'+nome_foto+'.png', 'wb') as q:
+            q.write(imagem)
 
 
 def pontos_turisticos_5km_logica(data):
@@ -113,6 +121,8 @@ def cadastrar_imagem_ponto(imagem):
 
 
 def registrar_ponto_turistico_logica(data):
+    print("fruta")
+
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
     nome_ponto = data.get('nome')
@@ -120,6 +130,7 @@ def registrar_ponto_turistico_logica(data):
     longitude_ponto = data.get('longitude')
     categoria_ponto = data.get('categoria')
     foto_ponto = data.get('foto')
+    print("fruta")
 
     # picture decode (base 64) -------------------------------------------
     decode_picture = base64.b64decode(foto_ponto) #recebo a foto em base 64 e dou um decode
@@ -224,8 +235,10 @@ def add_picture_tourist_spot_logica(data):
     senha_usuario = data.get('senha')
     nome_ponto = data.get('nome')
     foto_ponto = data.get('foto')
+    decode_picture = base64.b64decode(foto_ponto)  # recebo a foto em base 64 e dou um decode
+    print(decode_picture)
 
-    tuple = (login_usuario,senha_usuario,nome_ponto,foto_ponto)
+    tuple = (login_usuario,senha_usuario,nome_ponto,decode_picture)
     cursor = dbconnection()
     cursor[0].execute("SELECT nome  FROM tbPontoTuristico WHERE nome = %s",tuple[2]) #verifico se o ponto existe
     resultado = cursor[0].fetchall()
@@ -300,7 +313,10 @@ def ver_ponto_turistico_logica(data):
     else:
         cursor[0].execute("SELECT nome FROM tbPontoFavoritado WHERE email=%s",tuple[0])
         resultado = cursor[0].fetchall()
-
+        cursor[0].execute("SELECT foto,nome,cod FROM tbImagem_ponto")
+        fotos = cursor[0].fetchall()
+        escreve_imagem(fotos) #função que salva as imagens do banco numa pasta. o nome da imagem é o nome do ponto + o ID
+        print("polenta")
         return jsonify({'Mensagem': 'sucesso! aqui estão seus pontos!', "ponto": resultado}), 200  # status code http
 
 
@@ -377,6 +393,11 @@ def ver_pontos_criados_por_mim_logica(data):
         cursor[0].execute(
             "SELECT nome,categoria,latitude,longitude FROM tbPontoTuristico WHERE criador_ponto= %s",tuple[0])
         resultado = cursor[0].fetchall()
+
+        cursor[0].execute("SELECT foto,nome,cod FROM tbImagem_ponto WHERE email=%s",tuple[0])
+        fotos = cursor[0].fetchall()
+        print(len(fotos))
+        escreve_imagem(fotos)
         jsonify({'messege': 'ponto favoritado com sucesso!'})
         return jsonify(
             {'Mensagem': 'sucesso! aqui estão os pontos que você criou!', "ponto": resultado}), 200  # status code http

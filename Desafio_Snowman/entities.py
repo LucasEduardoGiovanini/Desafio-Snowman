@@ -50,7 +50,9 @@ def registrar_ponto_turistico():
     '''imagem = request.files['imagem'] #exemplo de como ler uma imagem que vem pelo form-data do postman
     path = imagem.read()
     cadastrar_imagem_ponto(path)'''
+
     data = request.json  # solicita o json enviado pelo postman
+
 
     return registrar_ponto_turistico_logica(data)
 
