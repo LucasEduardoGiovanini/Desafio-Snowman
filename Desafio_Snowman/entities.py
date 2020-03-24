@@ -78,7 +78,7 @@ def adicionar_foto_ponto():
     return adicionar_foto_ponto_logica(data)
 
 
-@app.route("/users/detepicturespot", methods=['DELETE'])
+@app.route("/users/deletepicturespot", methods=['DELETE'])
 def remover_foto_ponto():
     data=request.json
     return remover_foto_ponto_logica(data)

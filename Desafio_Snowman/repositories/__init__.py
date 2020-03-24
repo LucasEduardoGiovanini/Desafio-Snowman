@@ -1,1 +1,2 @@
 from .ponto_turistico_repository import PontoTuristicoRepository
+from .user_repository import UserRepostory

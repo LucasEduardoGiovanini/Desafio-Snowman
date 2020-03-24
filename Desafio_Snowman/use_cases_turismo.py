@@ -5,7 +5,9 @@ import base64
 from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
 from tests import *
 import random
-from repositories import PontoTuristicoRepository
+from repositories import PontoTuristicoRepository,UserRepostory
+from http import HTTPStatus
+
 
 use_cases_turismo = Flask(__name__)
 
@@ -25,42 +27,6 @@ def haversine(lon1, lat1, lon2, lat2):  # def que aplica a formula de haversine 
     r = 6371
     return c * r
 
-def dbconnection():  # def responsável pela conexão com mysql
-    connection = pymysql.connect(host='localhost',
-                                 user='root',
-                                 password='lucasgiovanini',
-                                 db='DBturismo',
-                                 cursorclass=pymysql.cursors.DictCursor)
-    cursor = connection.cursor()
-    return cursor, connection  # uso 2 returns pois algumas funções precisam fazer commit, e o commit só pode ser feito com o connection
-
-def verifica_login(email_usuario,senha_usuario): #verifico se ele é um usuario cadastrado, se for, retorno um true e permito que ele use o banco
-    cursor=dbconnection()
-    cursor[0].execute("SELECT email,senha  FROM tbUsuario WHERE email = '{}' and senha='{}'".format(email_usuario, senha_usuario))
-    resultado = cursor[0].fetchall()
-    if (not resultado):
-        return False
-    else:
-        return True
-
-def convert_image_to_binary(path):
-    with open(path, 'rb') as f:
-        binaryPhoto = f.read()
-        return binaryPhoto
-
-
-
-def testing_save_image_logic(data):
-    imagem = request.files['imagem'] #solicito uma imagem
-    path = imagem.read() #leo a imagem em binario
-    print(path)
-
-    cursor = dbconnection()
-
-    t = (path,)
-    cursor[0].execute( "INSERT INTO tbImg (foto) VALUES (%s)",t)
-    cursor[1].commit()
-
 def escreve_imagem(data):
     for x in data:
         imagem = x['foto']
@@ -70,53 +36,41 @@ def escreve_imagem(data):
 
 
 def pontos_turisticos_5km_logica(data):
-    latitude_usuario = data.get('lat')  # pega o valor seguido se spot
+    latitude_usuario = data.get('lat')
     longitude_usuario = data.get('long')
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
 
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
-    autenticacao = verifica_login(email_usuario, senha_usuario)
-    if (autenticacao == False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 404
+    repository = UserRepostory()
+    user_registered = repository.validation(email_usuario,senha_usuario) #primeiro trato da validação
+
+    if(user_registered == False):#se o login não for autorizado
+        return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
-        cursor[0].execute(
-            "SELECT nome, categoria, latitude, longitude FROM tbPontoTuristico")  # solicito todos os pontos turisticos
-        resultado = cursor[0].fetchall()  # comando que faz a busca por toda a informação da tabela
-
-        dado = list()  # lista que armazenará todos os resultados
-        for x in resultado:
-            latitude_parque = x['latitude']  # seleciono o valor de latitude contido no json
-            longitude_parque = x['longitude']  # seleciono o valor de latitude contido no json
-
-            distancia_km = haversine(float(longitude_usuario), float(latitude_usuario), float(longitude_parque), float(
-                latitude_parque))  # aplico a latitude e longitude dos dois pontos na formula de haversine para obter a distancia em km
+        # se o meu login for autorizado eu realizo a busca pelos pontos,
+        repository = PontoTuristicoRepository()
+        points = repository.search_points()
+        resultado = points
+        dado = list()
+        for x in resultado:  #como temos varios pontos, preciso percorrer todos, pegar seus dados e compara-los utilizando a formula
+            distancia_km = haversine(float(longitude_usuario), float(latitude_usuario), float(x['longitude']), float(x['latitude']))     # aplico a latitude e longitude dos dois pontos na formula de haversine para obter a distancia em km
             if (distancia_km <= 5):
                 x['distancia em Km'] = round(distancia_km, 2)
                 dado.append(x)
         if (not dado):
             return jsonify({'resultado': 'nenhum ponto foi encontrado'}), 404
         else:
-            return jsonify({'resultado': dado}), 200  # status code http
-
+            return jsonify({'resultado ': dado}), 200  # status code http
 
 
 def pontos_turisticos_por_nome_logica(data):
     ponto = data.get('spot')  # pega o valor seguido se spot
-    repository = PontoTuristicoRepository()
+    repository = PontoTuristicoRepository() #chama a classe que faz as ligações com o banco
     ponto = repository.get_ponto_turistico_by_name(ponto)
     if(not ponto):
         return jsonify({'message':'O ponto informado não existe'}),404
     else:
-
         return jsonify({'Pontos':ponto}), 200  # status code http
-
-
-
-def cadastrar_imagem_ponto(imagem):
-    cursor = dbconnection()
-    cursor[0].execute("INSERT INTO tbImagem_ponto (foto) VALUES (%s)", imagem)
-    cursor[1].commit()
 
 
 def registrar_ponto_turistico_logica(data):
@@ -128,104 +82,80 @@ def registrar_ponto_turistico_logica(data):
     longitude_ponto = data.get('longitude')
     categoria_ponto = data.get('categoria')
     foto_ponto = data.get('foto')
-
-
     # picture decode (base 64) -------------------------------------------
     decode_picture = base64.b64decode(foto_ponto) #recebo a foto em base 64 e dou um decode
-
     #---------------
-
     categoria_ponto = categoria_ponto.lower().capitalize()
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
-    autenticacao = verifica_login(email_usuario, senha_usuario)
-    if (autenticacao == False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 404
+    repository = UserRepostory()
+    user_registered = repository.validation(email_usuario,senha_usuario)
+    if(user_registered == False):
+        return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
-        tuple = (email_usuario,nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,decode_picture) #a minha variavel tupla armazena todos os valores que serão passados como parâmetro na query
-        cursor[0].execute("SELECT nome FROM tbPontoTuristico WHERE nome = %s",tuple[1])  # realizo uma busca para conferir se o ponto a ser cadastrado já existe
-        resultado = cursor[0].fetchall()
-        if (not resultado):  # se o ponto não existir, permito a criação
+        repository = PontoTuristicoRepository()
+        point_exists = repository.check_existence_of_the_point(nome_ponto)
 
-            cursor[0].execute("SELECT cod FROM tbCategorias WHERE nome = %s",tuple[4])  # primeiro faço uma busca para ver se a categoria indicada existe
-            resultado = cursor[0].fetchall();
+        if(point_exists):
+            return jsonify({'message': 'esse ponto já foi cadastrado!'}), 403  # proibido
+        else:
+            category_exist = repository.check_existence_of_category(categoria_ponto)
 
-            if (not resultado):  # se a categoria informada não existir
-
-                cursor[0].execute("INSERT INTO  tbCategorias (nome) VALUES(%s)",tuple[4])
-                cursor[1].commit()  # inserção da categoria no banco
-                cursor[0].execute("SELECT cod FROM tbCategorias WHERE nome = %s",tuple[4])  # pego o nome da categoria recém criada para poder continuar o processo e registrar o ponto
-                resultado = cursor[
-                    0].fetchall();  # armazeno o noem da categoria nova, o que me permitirá entrar no elif da criação
+            if(category_exist == False):
+                cod_category = repository.create_category(categoria_ponto)
+                category_exist = repository.check_existence_of_category(categoria_ponto) #solicito novamente a verificação da categoria, para que possa entrar no elif abaixo
                 jsonify({'Mensagem': 'categoria criada com sucesso!'})  # status code http
 
-            elif (resultado):  # se resultado tiver um valor
-                cursor[0].execute("SELECT cod FROM tbCategorias WHERE nome = %s",tuple[4])
-                resultado = cursor[0].fetchall()
-                for x in resultado:  # preciso do for para ler o conjunto de jsons. Ele fará apenas um loop, pois não existe mais de uma categoria com o mesmo nome
-                    touppleAux=(int(x['cod']),) #crio essa tupla apenas para lidar com o X
-                    cursor[0].execute(
-                        "INSERT INTO tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) VALUES (%s,%s,%s,%s,%s)",(tuple[1], int(x['cod']), tuple[2], tuple[3], tuple[0]))
-                    cursor[1].commit()
+            elif(category_exist):
+                 extract_cod_category = int(category_exist['cod'])
+                 repository.create_tourist_point(nome_ponto,extract_cod_category,latitude_ponto,longitude_ponto,email_usuario)
+                 repository.create_upvote_table(nome_ponto)#quando o ponto é criado, criamos a tabela de upvotes dele com valor inicial 0
 
-                    #inserindo a imagem no banco -------------------------------------
-                    cursor[0].execute("INSERT INTO tbImagem_ponto(foto,nome,email) VALUES(%s,%s,%s)",(tuple[5],tuple[1],email_usuario))
-                    #--------------------------------------------
-
-
-                cursor[0].execute("INSERT INTO tbUpvote(nome,quantidade_upvote) VALUES (%s,0)",tuple[1])  # assim que o ponto turistico é registrado, ja é criado uma respectiva tabela em upvote
-                cursor[1].commit()
+                 if(foto_ponto!=None):# se o usuário tiver enviado uma foto do ponto, cadastramos
+                    repository.add_picture_spot(foto_ponto,nome_ponto,email_usuario) #adicionamos a foto do ponto
+                    # cursor[0].execute("INSERT INTO tbImagem_ponto(foto,nome,email) VALUES(%s,%s,%s)",(tuple[5],tuple[1],email_usuario))
             return jsonify({'messege': 'ponto cadastrado com sucesso!'}), 200
-        else:  # se o ponto existir, retorno uma mensagem que impossibilita a criação
 
-            return jsonify({'message': 'esse ponto já foi cadastrado!'}), 403  # proibido
 
 
 
 def comentar_ponto_turistico_logica(data):
     nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
-    comentario_ponto = data.get('comentario')
+    descricao_comentario = data.get('comentario')
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
 
-    tuple=(nome_ponto,comentario_ponto,email_usuario,senha_usuario)
+    repository = UserRepostory()
+    user_registered = repository.validation(email_usuario, senha_usuario)  # primeiro trato da validação
 
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
-    autenticacao = verifica_login(email_usuario, senha_usuario)
-    if (autenticacao == True):
-        cursor[0].execute("SELECT nome FROM tbPontoTuristico WHERE nome = %s",tuple[0])  # faço a busca pelo ponto para ver se ele existe
-        resultado = cursor[0].fetchall()  # comando que faz a busca por toda a informação da tabela
-
-        if (
-        not resultado):  # se a string não tiver valor dentro, quer dizer que o ponto não existe, se tiver valor, permito que insira um novo comentario
-            return jsonify({'message': 'o ponto informado não existe'}), 404
-        else:
-            cursor[0].execute("INSERT INTO tbComentario (email,nome,descricao) VALUES (%s,%s,%s)",(tuple[2],tuple[0],tuple[1]))  # faço uma busca no banco pelo ponto turistico informado
-            cursor[1].commit()
-
-        return jsonify({'message': 'comentário registrado com sucesso!'}), 200  # status code http
+    if (user_registered == False):  # se o login não for autorizado
+        return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
-        return jsonify({'message': 'login ou senha incorretos!'}), 404
+        repository = PontoTuristicoRepository()
+        point_exists = repository.check_existence_of_the_point(nome_ponto)
+        if(point_exists):
+            repository.create_comment_about_poin(email_usuario,nome_ponto,descricao_comentario)
+            return jsonify({'message': 'comentário cadastrado com sucesso!'}), 200  # proibido
 
+        else:
+            return jsonify({'message': 'o ponto informado não existe.'}), 404  # proibido
 
 
 def ver_comentario_ponto_turistico_logica(data):
-    nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
+    nome_ponto = data.get('nome')
+    repository = PontoTuristicoRepository()
+    point_exist = repository.check_existence_of_the_point(nome_ponto)
+    if(point_exist):
+        comments = repository.search_comments(nome_ponto)
+        if(comments==None):
+            return jsonify({'message': 'parece que esse ponto ainda não possui comentários'}), 200  # proibido
+        else:
+            list_comments=list() #os comentários serão inseridos na lista para que retorne com um formato adequado.
 
-    tuple =(nome_ponto,)
+            for comment in comments:
+                list_comments.append(comment['descricao'])
+            return jsonify({'comentário(s)\n':list_comments}), 200  # proibido
 
-    cursor[0].execute("SELECT nome, descricao FROM tbComentario WHERE nome = %s",tuple[0])  # faço a busca pelo ponto para ver se ele existe
-
-    resultado = cursor[0].fetchall()  # comando que faz a busca por toda a informação da tabela
-    dado = list()  # lista que armazenará todos os resultados
-    if (
-    not resultado):  # se a string não tiver valor dentro, quer dizer que o ponto não existe, se tiver valor, permito que insira um novo comentario
-        return jsonify({'message': 'o ponto informado não existe!'}), 404
     else:
-        for x in resultado:
-            dado.append(x)
-        return jsonify({'resultado': dado}), 200
-
+        return jsonify({'message': 'o ponto informado não existe.'}), 404  # proibido
 
 
 def adicionar_foto_ponto_logica(data):
@@ -235,87 +165,80 @@ def adicionar_foto_ponto_logica(data):
     foto_ponto = data.get('foto')
     decode_picture = base64.b64decode(foto_ponto)  # recebo a foto em base 64 e dou um decode
 
-
-    tuple = (login_usuario,senha_usuario,nome_ponto,decode_picture)
-    cursor = dbconnection()
-    cursor[0].execute("SELECT nome  FROM tbPontoTuristico WHERE nome = %s",tuple[2]) #verifico se o ponto existe
-    resultado = cursor[0].fetchall()
-    if not resultado:
-        return jsonify({'messege': 'o ponto informado não existe!'}), 403
+    repository = UserRepostory()
+    user_registered = repository.validation(login_usuario,senha_usuario)
+    if(user_registered==False):
+        return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
-        autenticador = verifica_login(tuple[0],tuple[1])
-        if autenticador== False:
-            return jsonify({'messege': 'login ou senha incorretos'}), 404
+        repository = PontoTuristicoRepository()
+        point_exists = repository.check_existence_of_the_point(nome_ponto)
+        if(not point_exists):
+            return jsonify({'messege': 'o ponto informado não existe!'}), 403
         else:
-            cursor[0].execute("INSERT INTO tbImagem_ponto(foto,nome,email) VALUES(%s,%s,%s)", (tuple[3], tuple[2],tuple[0]))
-            cursor[1].commit()
-        return jsonify({'messege':'foto cadastrada com sucesso!'}), 200  # status code http
+            repository.add_picture_spot(foto_ponto,nome_ponto,login_usuario)
+            return jsonify({'messege': 'foto cadastrada com sucesso!'}), 200
+
 
 
 def remover_foto_ponto_logica(data):
-    login_usuario = data.get('login')
+    email_usuario = data.get('login')
     senha_usuario = data.get('senha')
     cod_foto = data.get('cod_foto')
 
-    tuple = (login_usuario, senha_usuario, cod_foto)
-    cursor = dbconnection()
-    cursor[0].execute("SELECT cod  FROM tbImagem_ponto WHERE cod = %s and email = %s", (tuple[2],tuple[0]))  # verifico se o ponto existe
-    resultado = cursor[0].fetchall()
-    if not resultado:
-        return jsonify({'messege': 'foto não encontrada!'}), 404
+    repository = UserRepostory()
+    user_registered = repository.validation(email_usuario, senha_usuario)
+
+    if (user_registered == False):  # se o login não for autorizado
+        return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
-        autenticador = verifica_login(tuple[0], tuple[1])
-        if autenticador == False:
-            return jsonify({'messege': 'login ou senha incorretos'}), 404
+        repository = PontoTuristicoRepository()
+        photo_exist = repository.search_picture(cod_foto)
+        if(photo_exist):
+            photo_deleted = repository.delete_picture(cod_foto,email_usuario)
+            return jsonify({'messege': 'foto apagada com sucesso'}), 200
         else:
-            cursor[0].execute("DELETE FROM tbImagem_ponto WHERE cod = %s and email=%s", (tuple[2],tuple[0]))
-            cursor[1].commit()
-        return jsonify({'messege': 'Foto deletada com sucesso!'}), 200  # status code http
-
-
+            return jsonify({'messege': 'foto não encontrada'}), 404
 
 
 def favoritar_ponto_turistico_logica(data):
     nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
-    tuple = (nome_ponto,email_usuario)
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
-    cursor[0].execute("SELECT nome  FROM tbPontoTuristico WHERE nome = %s",tuple[0])  # faço a busca pelo ponto para ver se ele existe
-    resultado = cursor[0].fetchall()  # comando que faz a busca por toda a informação da tabela
-    if (
-    not resultado):  # se a string não tiver valor dentro, quer dizer que o ponto não existe, se tiver valor, permito que insira um novo comentario
-        return jsonify({'messege': 'o ponto informado não existe!'}), 404
+
+    repository = UserRepostory()
+    user_registered = repository.validation(email_usuario,senha_usuario)
+    if(user_registered==False):
+        return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
-        autenticador = verifica_login(email_usuario, senha_usuario)
-        if (autenticador == False):
-            return jsonify({'messege': 'login ou senha incorretos'}), 404
+        repository = PontoTuristicoRepository()
+        point_exists = repository.check_existence_of_the_point(nome_ponto)
+        if(not point_exists):
+            return jsonify({'messege': 'o ponto informado não existe!'}), 404
         else:
-            cursor[0].execute("INSERT INTO tbPontoFavoritado(email,nome) VALUES(%s,%s)",(tuple[1],tuple[0]))
-            cursor[1].commit()
-        return jsonify({'messege': 'ponto favoritado com sucesso!'}), 200  # status code http
+            repository = UserRepostory()
+            result = repository.favorite_tourist_spot(email_usuario,nome_ponto)
+            if(result):
+                return jsonify({'messege': 'ponto favoritado com sucesso!'}), 200
+            else:
+                return jsonify({'messege': 'o ponto já está favoritado'}), 403
+
 
 
 def ver_ponto_turistico_favoritado_logica(data):
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
-    tuple=(email_usuario,senha_usuario)
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
 
-    autenticador = verifica_login(email_usuario, senha_usuario)
-    cursor[0].execute(
-        "SELECT email,senha  FROM tbUsuario WHERE email = %s and senha= %s",(tuple[0],tuple[1]))
-    resultado = cursor[0].fetchall()
-    if (not resultado):
-        return jsonify({'messege': 'login ou senha incorretos'}), 404
+    repository = UserRepostory()
+    user_registered = repository.validation(email_usuario, senha_usuario)
+    if (user_registered == False):
+        return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
-        cursor[0].execute("SELECT nome FROM tbPontoFavoritado WHERE email=%s",tuple[0])
-        resultado = cursor[0].fetchall()
-        cursor[0].execute("SELECT foto,nome,cod FROM tbImagem_ponto")
-        fotos = cursor[0].fetchall()
-        escreve_imagem(fotos) #função que salva as imagens do banco numa pasta. o nome da imagem é o nome do ponto + o ID
-        print("polenta")
-        return jsonify({'Mensagem': 'sucesso! aqui estão seus pontos!', "ponto": resultado}), 200  # status code http
+
+        points = repository.search_favorited_spots(email_usuario)
+        if (not points):
+            return jsonify({'messege': 'o ponto informado não existe!'}), 404
+        else:
+            return jsonify({'Mensagem': 'sucesso! aqui estão seus pontos!', "ponto": points}), 200
 
 
 def remover_ponto_favoritado_logica(data):
