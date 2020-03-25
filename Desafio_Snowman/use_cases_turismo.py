@@ -112,7 +112,7 @@ def registrar_ponto_turistico_logica(data):
             elif(category_exist):
                  extract_cod_category = int(category_exist['cod'])
                  repository.create_tourist_point(nome_ponto,extract_cod_category,latitude_ponto,longitude_ponto,email_usuario)
-                 repository.create_upvote_table(nome_ponto)#quando o ponto é criado, criamos a tabela de upvotes dele com valor inicial 0
+
 
                  if(foto_ponto!=None):# se o usuário tiver enviado uma foto do ponto, cadastramos
                     repository.add_picture_spot(foto_ponto,nome_ponto,email_usuario) #adicionamos a foto do ponto
