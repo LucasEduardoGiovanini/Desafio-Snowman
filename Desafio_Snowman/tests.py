@@ -1,6 +1,6 @@
 import unittest,pymysql
 from use_cases_turismo import *
-from flask_api import status
+#from flask_api import status #precisei remover pois acusava erro na API
 from app import app
 
 if __name__ == '__main__':
