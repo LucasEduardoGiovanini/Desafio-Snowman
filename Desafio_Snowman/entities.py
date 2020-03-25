@@ -23,14 +23,7 @@ def inicial():#passo todos os meus testes
 
 @app.route("/users/seealltouristspot", methods=['GET'])  #ver todos os pontos turisticos cadastrados
 def ver_todos_pontos():
-
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco #a variavel dispensavel n sera utilizada nessa def pois não necessitamos de seu retorno
-    cursor[0].execute("SELECT nome, categoria, latitude, longitude FROM tbPontoTuristico")  # faço uma busca no banco pelo ponto turistico informado
-    resultado = cursor[0].fetchall()  # comando que faz a busca por toda a informação da tabela
-    if(not resultado):
-        return jsonify({'message':'nao existem pontos cadastrados'}),404
-    else:
-        return jsonify({'message':resultado}), 200  # status code http
+    return ver_todos_pontos_logica()
 
 
 
@@ -51,10 +44,6 @@ def pontos_turisticos_por_nome():
 
 @app.route("/users/registertouristspot", methods=['POST'])  # rota para enviar um ponto turistico com base no nome
 def registrar_ponto_turistico():
-    '''imagem = request.files['imagem'] #exemplo de como ler uma imagem que vem pelo form-data do postman
-    path = imagem.read()
-    cadastrar_imagem_ponto(path)'''
-
     data = request.json  # solicita o json enviado pelo postman
 
 
@@ -117,8 +106,3 @@ def criar_nova_categoria():
     return criar_nova_categoria_logica(data)
 
 
-
-@app.route("/users/test", methods=['POST'])
-def testing_save_image():
-    data = request.json
-    return testing_save_image_logic(data)

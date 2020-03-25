@@ -34,6 +34,11 @@ def escreve_imagem(data):
         with open('C:/Users/lucas/Desktop/photo test/'+nome_foto+'.png', 'wb') as q:
             q.write(imagem)
 
+def ver_todos_pontos_logica():
+    repository =PontoTuristicoRepository()
+    all_points = repository.search_points()
+    return jsonify({'messege': 'aqui estão os pontos:','ponto(os)':all_points}), 200
+
 
 def pontos_turisticos_5km_logica(data):
     latitude_usuario = data.get('lat')
@@ -42,7 +47,7 @@ def pontos_turisticos_5km_logica(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    user_registered = repository.validation(email_usuario,senha_usuario) #primeiro trato da validação
+    user_registered = repository.user_validation(email_usuario, senha_usuario) #primeiro trato da validação
 
     if(user_registered == False):#se o login não for autorizado
         return jsonify({'messege': 'login ou senha incorretos'}), 401
@@ -87,7 +92,7 @@ def registrar_ponto_turistico_logica(data):
     #---------------
     categoria_ponto = categoria_ponto.lower().capitalize()
     repository = UserRepostory()
-    user_registered = repository.validation(email_usuario,senha_usuario)
+    user_registered = repository.user_validation(email_usuario, senha_usuario)
     if(user_registered == False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
@@ -111,7 +116,6 @@ def registrar_ponto_turistico_logica(data):
 
                  if(foto_ponto!=None):# se o usuário tiver enviado uma foto do ponto, cadastramos
                     repository.add_picture_spot(foto_ponto,nome_ponto,email_usuario) #adicionamos a foto do ponto
-                    # cursor[0].execute("INSERT INTO tbImagem_ponto(foto,nome,email) VALUES(%s,%s,%s)",(tuple[5],tuple[1],email_usuario))
             return jsonify({'messege': 'ponto cadastrado com sucesso!'}), 200
 
 
@@ -124,7 +128,7 @@ def comentar_ponto_turistico_logica(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    user_registered = repository.validation(email_usuario, senha_usuario)  # primeiro trato da validação
+    user_registered = repository.user_validation(email_usuario, senha_usuario)  # primeiro trato da validação
 
     if (user_registered == False):  # se o login não for autorizado
         return jsonify({'messege': 'login ou senha incorretos'}), 401
@@ -166,7 +170,7 @@ def adicionar_foto_ponto_logica(data):
     decode_picture = base64.b64decode(foto_ponto)  # recebo a foto em base 64 e dou um decode
 
     repository = UserRepostory()
-    user_registered = repository.validation(login_usuario,senha_usuario)
+    user_registered = repository.user_validation(login_usuario, senha_usuario)
     if(user_registered==False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
@@ -186,7 +190,7 @@ def remover_foto_ponto_logica(data):
     cod_foto = data.get('cod_foto')
 
     repository = UserRepostory()
-    user_registered = repository.validation(email_usuario, senha_usuario)
+    user_registered = repository.user_validation(email_usuario, senha_usuario)
 
     if (user_registered == False):  # se o login não for autorizado
         return jsonify({'messege': 'login ou senha incorretos'}), 401
@@ -206,7 +210,7 @@ def favoritar_ponto_turistico_logica(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    user_registered = repository.validation(email_usuario,senha_usuario)
+    user_registered = repository.user_validation(email_usuario, senha_usuario)
     if(user_registered==False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
@@ -229,7 +233,7 @@ def ver_ponto_turistico_favoritado_logica(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    user_registered = repository.validation(email_usuario, senha_usuario)
+    user_registered = repository.user_validation(email_usuario, senha_usuario)
     if (user_registered == False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
@@ -246,25 +250,20 @@ def remover_ponto_favoritado_logica(data):
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
 
-    tuple = (nome_ponto,email_usuario,senha_usuario)
-
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
-    cursor[0].execute("SELECT nome  FROM tbPontoTuristico WHERE nome = %s",tuple[0])  # faço a busca pelo ponto para ver se ele existe
-    resultado = cursor[0].fetchall()  # comando que faz a busca por toda a informação da tabela
-    if (
-    not resultado):  # se a string não tiver valor dentro, quer dizer que o ponto não existe, se tiver valor, permito que insira um novo comentario
-        return jsonify({'messege': 'o ponto informado não existe!'}), 404
+    repository = UserRepostory()
+    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    if(user_registered==False):
+        return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
-        cursor[0].execute(
-            "SELECT email,senha  FROM tbUsuario WHERE email = %s and senha=%s",(tuple[1],tuple[2]))
-        resultado = cursor[0].fetchall()
-        if (not resultado):
-            return jsonify({'messege': 'login ou senha incorretos'}), 404
+        repository=UserRepostory()
+
+        point_favored = repository.check_who_favored_point(email_usuario,nome_ponto)
+        if(point_favored == None):
+            return jsonify({'messege': 'o ponto não foi localizado'}), 404
         else:
-            cursor[0].execute(
-                "DELETE FROM tbPontoFavoritado WHERE email = %s and nome=%s",(tuple[1],tuple[0]))
-            cursor[1].commit()
-        return jsonify({'messege': 'ponto removido com sucesso!'}), 200  # status code http
+            repository.remove_favorited_tourist_spot(email_usuario,nome_ponto)
+            return jsonify({'messege': 'ponto removido!'}), 200
+
 
 
 def upvote_ponto_logica(data):
@@ -272,30 +271,18 @@ def upvote_ponto_logica(data):
     senha_usuario = data.get('senha')
     nome_ponto = data.get('nome')
 
-    tuple=(email_usuario,senha_usuario,nome_ponto)
-
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
-
-    autenticacao = verifica_login(email_usuario, senha_usuario)
-    if (autenticacao == False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 404
+    repository = UserRepostory()
+    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    if(user_registered==False):
+        return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
-        cursor[0].execute("SELECT nome FROM tbPontoTuristico WHERE nome=%s",tuple[2])  ##verifico se o ponto existe
-        resultado = cursor[0].fetchall()
-        if (not resultado):
-            return jsonify(
-                {'Mensagem': 'o ponto informado não existe'}), 404  # status code http
+        repository = PontoTuristicoRepository()
+        point_exists = repository.check_existence_of_the_point(nome_ponto)
+        if(not point_exists):
+            return jsonify({'messege': 'o ponto informado não existe!'}), 404
         else:
-            cursor[0].execute("SELECT quantidade_upvote from tbUpvote where nome = %s",tuple[2])  # pego a quantidade de upvotes do ponto desejado parar poder incrementar
-
-            resultado = cursor[0].fetchall()
-
-            for x in resultado:  # o for é necessário para entrar no json e filtrar o dado
-                quantidade_atual_de_upvotes = (x['quantidade_upvote'],)  # armazeno o valor atual dos uvptoes
-                cursor[0].execute("UPDATE tbUpvote SET quantidade_upvote = %s WHERE nome = %s",(quantidade_atual_de_upvotes[0] + 1,tuple[2]))  # insiro a quantidade atual com incremento, para registrar o upvote
-                cursor[1].commit()
-            jsonify({'messege': 'ponto favoritado com sucesso!'})
-            return jsonify({'Mensagem': 'upvote registrado com sucesso!'}), 200  # status code http
+            repository.register_upvote(nome_ponto)
+            return jsonify({'messege': 'ponto favoritado!'}), 200
 
 
 
@@ -303,25 +290,17 @@ def ver_pontos_criados_por_mim_logica(data):
     email_usuario = data.get('login')
     senha_usuario = data.get('senha')
 
-    tuple = (email_usuario,senha_usuario)
-
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
-
-    autenticador = verifica_login(tuple[0], tuple[1])
-    if (autenticador == False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 404
+    repository = UserRepostory()
+    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    if(user_registered==False):
+        return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
-        cursor[0].execute(
-            "SELECT nome,categoria,latitude,longitude FROM tbPontoTuristico WHERE criador_ponto= %s",tuple[0])
-        resultado = cursor[0].fetchall()
 
-        cursor[0].execute("SELECT foto,nome,cod FROM tbImagem_ponto WHERE email=%s",tuple[0])
-        fotos = cursor[0].fetchall()
-        print(len(fotos))
-        escreve_imagem(fotos)
-        jsonify({'messege': 'ponto favoritado com sucesso!'})
-        return jsonify(
-            {'Mensagem': 'sucesso! aqui estão os pontos que você criou!', "ponto": resultado}), 200  # status code http
+        my_points = repository.search_tourist_points_created_by_user(email_usuario)
+        if(my_points == None):
+            return jsonify({'messege': 'parece que você não cadastrou nenhum ponto!'}), 200
+        else:
+            return jsonify({'messege': 'aqui estão seus pontos:','ponto(os)':my_points}),200
 
 
 def criar_nova_categoria_logica(data):
@@ -331,20 +310,17 @@ def criar_nova_categoria_logica(data):
 
     nome_categoria=nome_categoria.lower().capitalize() #pego a string e deixo toda em minusculo com apenas a primeira letra maisucula, para seguir o padrão do meu banco
 
-    tuple=(email_usuario,senha_usuario,nome_categoria)
-
-    cursor = dbconnection()  # atribuo ao cursor a conexão com o banco
-    autenticador = verifica_login(tuple[0], tuple[1])
-
-    if (autenticador == False):
-        return jsonify({'messege':'login ou senha incorretos'}),404
+    repository = UserRepostory()
+    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    if (user_registered == False):
+        return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
-        cursor[0].execute("SELECT nome FROM tbCategorias WHERE nome=%s",tuple[2])
-        resultado=cursor[0].fetchall()
-        if(not resultado):
-            cursor[0].execute("INSERT INTO  tbCategorias (nome) VALUES(%s)",tuple[2])
-            cursor[1].commit()
-            return jsonify({'Mensagem':'categoria criada com sucesso!'}), 200  # status code http
-        else:
+        repository = PontoTuristicoRepository()
+        category_exist=repository.check_existence_of_category(nome_categoria)
 
-            return jsonify({'Mensagem': 'a categoria já existe!'}), 204  # status code http
+        if (category_exist == False):
+            repository.create_category(nome_categoria)
+            return jsonify({'messege': 'categoria criada com sucesso!'}), 200
+        else:
+            return jsonify({'messege': 'essa categoria já existe.'}), 403
+

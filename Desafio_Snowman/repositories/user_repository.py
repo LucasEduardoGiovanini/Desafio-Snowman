@@ -10,7 +10,7 @@ class UserRepostory:
                                 cursorclass=pymysql.cursors.DictCursor)
 
 
-    def validation(self,email:str, password:str): #ja passo o login dentro de uma tupla
+    def user_validation(self, email:str, password:str):
         cursor = self.connection.cursor() #recebo o cursor
         arguments = (email,password)
         cursor.execute("SELECT email,senha  FROM tbUsuario WHERE email = %s and senha=%s",arguments)
@@ -37,6 +37,26 @@ class UserRepostory:
         cursor = self.connection.cursor()
         arguments=(email,)
         cursor.execute("SELECT nome FROM tbPontoFavoritado WHERE email=%s",arguments)
+        result = cursor.fetchall()
+        return result
+
+    def remove_favorited_tourist_spot(self,email:str,nome:str):
+        cursor = self.connection.cursor();
+        arguments=(email,nome)
+        cursor.execute("DELETE FROM tbPontoFavoritado WHERE email=%s and nome=%s",arguments)
+        self.connection.commit()
+
+    def check_who_favored_point(self,email:str,nome:str):
+        cursor = self.connection.cursor();
+        arguments = (email, nome)
+        cursor.execute("SELECT nome FROM tbPontoFavoritado WHERE email=%s and nome=%s", arguments)
+        result = cursor.fetchone()
+        return result
+
+    def search_tourist_points_created_by_user(self,email:str):
+        cursor = self.connection.cursor()
+        arguments = (email,)
+        cursor.execute("SELECT nome,categoria,latitude,longitude FROM tbPontoTuristico WHERE criador_ponto= %s",arguments)
         result = cursor.fetchall()
         return result
 
