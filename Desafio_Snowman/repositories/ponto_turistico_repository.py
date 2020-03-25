@@ -69,11 +69,11 @@ class PontoTuristicoRepository:
         arguments=(nome,categoria,latitude,longitude,criador_ponto)
         cursor.execute("INSERT INTO tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) VALUES (%s,%s,%s,%s,%s)",arguments)
         self.connection.commit()
+        arguments=(nome,)
+        cursor.execute("INSERT INTO tbUpvote(nome,quantidade_upvote) VALUES (%s,0)", arguments)
+        self.connection.commit()
 
-    def create_upvote_table(self,nome:str):
-        cursor = self.connection.cursor()
-        arguments = (nome,)
-        cursor.execute("INSERT INTO tbUpvote(nome,quantidade_upvote) VALUES (%s,0)",arguments)
+
 
     def create_comment_about_poin(self,email:str, nome:str, descricao: str):
         cursor = self.connection.cursor()
