@@ -9,6 +9,7 @@ class UserRepostory:
                                 db='DBturismo',
                                 cursorclass=pymysql.cursors.DictCursor)
 
+<<<<<<< HEAD
     def user_exists(self,email:str): #checo apenas se o email dele consta no banco
         cursor = self.connection.cursor()
         arguments = (email,)
@@ -18,28 +19,36 @@ class UserRepostory:
         return result
 
 
+<<<<<<< Updated upstream
     def validate_user_email_and_get_his_password(self, email:str): #se o email é valido, retornamos a senha
+=======
+    def validate_user_email_returning_encrpyt_password(self, email:str):
 
+>>>>>>> Stashed changes
+
+    def user_validation(self, email:str, password:str):
         cursor = self.connection.cursor() #recebo o cursor
-        arguments = (email,)
-        cursor.execute("SELECT email,senha  FROM tbUsuario WHERE email = %s ",arguments)
+        arguments = (email,password)
+        cursor.execute("SELECT email,senha  FROM tbUsuario WHERE email = %s and senha=%s",arguments)
         resultado = cursor.fetchone() #caso tenha um valor, é válido,por isso o fetchone
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+
+>>>>>>> Stashed changes
         return resultado['senha'] if resultado!=None else False
 
 
     def register_user(self, email:str, password:str):
         cursor=self.connection.cursor()
         user_already_registered=self.user_exists(email)
+=======
+>>>>>>> parent of 86d1039... Add users password encryption
 
-        if(user_already_registered):
+        if not resultado:
             return False
         else:
-            arguments = (email,password)
-            cursor.execute("INSERT INTO tbUsuario (email,senha) VALUES(%s,%s)",arguments)
-            self.connection.commit()
             return True
-
-
 
     def favorite_tourist_spot(self,email:str, nome:str):
         cursor = self.connection.cursor()

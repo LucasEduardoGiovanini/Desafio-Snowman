@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify,app #importo a app que é a primeira classe que irá rodar
+from flask import Flask, request, jsonify,app,make_response #importo a app que é a primeira classe que irá rodar
 from werkzeug.datastructures import FileStorage
 import pymysql
 import base64
@@ -10,11 +10,15 @@ from http import HTTPStatus
 import auth
 
 
+
+
+
 use_cases_turismo = Flask(__name__)
 
 
 if __name__ == "__main__":
     app.run() #rodo a classe app
+
 
 
 
@@ -57,7 +61,11 @@ def validar_senha_do_usuario(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
+<<<<<<< Updated upstream
     database_user_password = repository.validate_user_email_and_get_his_password(email_usuario) #retorna a senha
+=======
+    database_user_password = repository.validate_user_email_returning_encrpyt_password(email_usuario) #retorna a senha
+>>>>>>> Stashed changes
     if(database_user_password):
         encrypt = auth.Encrypt()
         validation = encrypt.validate_user_password(senha_usuario,database_user_password)
@@ -68,6 +76,7 @@ def validar_senha_do_usuario(data):
 
     else:
         return jsonify({'messege': 'Usuário não localizado.'}), 404
+
 
 def ver_todos_pontos_logica():
     repository =PontoTuristicoRepository()
