@@ -7,7 +7,7 @@ from tests import *
 import random
 from repositories import PontoTuristicoRepository,UserRepostory
 from http import HTTPStatus
-from auth import *
+import auth
 
 
 use_cases_turismo = Flask(__name__)
@@ -44,7 +44,7 @@ def registrar_usuario_logica(data):
     email_usuario = data.get('email')
     senha_usuario = data.get('senha')
 
-    encrypted_password = encrypt.encrypt_password(senha_usuario)
+    encrypted_password = auth.Encrypt.encrypt_password(senha_usuario)
     repository = UserRepostory()
     registered = repository.register_user(email_usuario,encrypted_password)
     if(registered == False):
@@ -52,14 +52,14 @@ def registrar_usuario_logica(data):
     else:
         return jsonify({'messege': 'Usuário cadastrado com sucesso'}), 200
 
-def validar_usuario_logica(data):
+def validar_senha_do_usuario(data):
     email_usuario = data.get('email')
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    database_user_password = repository.validate_user_email(email_usuario) #retorna a senha
+    database_user_password = repository.validate_user_email_and_get_his_password(email_usuario) #retorna a senha
     if(database_user_password):
-        hash = encrypt()
+        hash = auth.Encrypt()
         validation = hash.validate_user_password(senha_usuario,database_user_password)
         if(validation == True):
             return jsonify({'messege': 'Usuário válido.'}), 200

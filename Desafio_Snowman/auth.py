@@ -1,6 +1,6 @@
 import bcrypt
 
-class encrypt:
+class Encrypt:
     def encrypt_password(password:str):
         byte_password = str.encode(password) #converte string para bytes
         hashed = bcrypt.hashpw(byte_password, bcrypt.gensalt(10))

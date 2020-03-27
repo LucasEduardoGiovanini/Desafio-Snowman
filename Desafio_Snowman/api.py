@@ -1,7 +1,5 @@
 from flask import Flask, request, jsonify, app
 from use_cases_turismo import *
-from auth import *
-from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
 
 import pymysql
 
@@ -29,7 +27,7 @@ def register_user():
 @app.route("/users/validate", methods=['GET'])  #ver todos os pontos turisticos cadastrados
 def validate_user():
     data = request.json
-    return validar_usuario_logica(data)
+    return validar_senha_do_usuario(data)
 
 
 @app.route("/users/seealltouristspot", methods=['GET'])  #ver todos os pontos turisticos cadastrados
