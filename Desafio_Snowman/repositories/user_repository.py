@@ -9,17 +9,37 @@ class UserRepostory:
                                 db='DBturismo',
                                 cursorclass=pymysql.cursors.DictCursor)
 
+    def user_exists(self,email:str): #checo apenas se o email dele consta no banco
+        cursor = self.connection.cursor()
+        arguments = (email,)
 
-    def user_validation(self, email:str, password:str):
+        cursor.execute("SELECT email FROM tbUsuario WHERE email=%s",arguments)
+        result=cursor.fetchone()
+        return result
+
+
+    def validate_user_email_and_get_his_password(self, email:str): #se o email é valido, retornamos a senha
+
         cursor = self.connection.cursor() #recebo o cursor
-        arguments = (email,password)
-        cursor.execute("SELECT email,senha  FROM tbUsuario WHERE email = %s and senha=%s",arguments)
+        arguments = (email,)
+        cursor.execute("SELECT email,senha  FROM tbUsuario WHERE email = %s ",arguments)
         resultado = cursor.fetchone() #caso tenha um valor, é válido,por isso o fetchone
+        return resultado['senha'] if resultado!=None else False
 
-        if not resultado:
+
+    def register_user(self, email:str, password:str):
+        cursor=self.connection.cursor()
+        user_already_registered=self.user_exists(email)
+
+        if(user_already_registered):
             return False
         else:
+            arguments = (email,password)
+            cursor.execute("INSERT INTO tbUsuario (email,senha) VALUES(%s,%s)",arguments)
+            self.connection.commit()
             return True
+
+
 
     def favorite_tourist_spot(self,email:str, nome:str):
         cursor = self.connection.cursor()

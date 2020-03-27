@@ -7,6 +7,7 @@ from tests import *
 import random
 from repositories import PontoTuristicoRepository,UserRepostory
 from http import HTTPStatus
+import auth
 
 
 use_cases_turismo = Flask(__name__)
@@ -14,6 +15,8 @@ use_cases_turismo = Flask(__name__)
 
 if __name__ == "__main__":
     app.run() #rodo a classe app
+
+
 
 
 def haversine(lon1, lat1, lon2, lat2):  # def que aplica a formula de haversine para encontrar pontos num raio de 5km
@@ -33,6 +36,38 @@ def escreve_imagem(data):
         nome_foto = x['nome'] + str(x['cod'])
         with open('C:/Users/lucas/Desktop/photo test/'+nome_foto+'.png', 'wb') as q:
             q.write(imagem)
+
+
+#use case chama a função de encrptar pra senha, encripta e chama a função do repositorio do usuario pra armazenar os dados já encriptados
+def registrar_usuario_logica(data):
+
+    email_usuario = data.get('email')
+    senha_usuario = data.get('senha')
+
+    encrypted_password = auth.Encrypt.encrypt_password(senha_usuario)
+    repository = UserRepostory()
+    registered = repository.register_user(email_usuario,encrypted_password)
+    if(registered == False):
+        return jsonify({'messege': 'O usuário já existe'}), 403
+    else:
+        return jsonify({'messege': 'Usuário cadastrado com sucesso'}), 200
+
+def validar_senha_do_usuario(data):
+    email_usuario = data.get('email')
+    senha_usuario = data.get('senha')
+
+    repository = UserRepostory()
+    database_user_password = repository.validate_user_email_and_get_his_password(email_usuario) #retorna a senha
+    if(database_user_password):
+        encrypt = auth.Encrypt()
+        validation = encrypt.validate_user_password(senha_usuario,database_user_password)
+        if(validation == True):
+            return jsonify({'messege': 'Usuário válido.'}), 200
+        else:
+            return jsonify({'messege': 'Usuário inválido.'}), 403
+
+    else:
+        return jsonify({'messege': 'Usuário não localizado.'}), 404
 
 def ver_todos_pontos_logica():
     repository =PontoTuristicoRepository()
