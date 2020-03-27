@@ -18,13 +18,14 @@ class UserRepostory:
         return result
 
 
-    def validate_user_email(self, email:str): #se o email é valido, retornamos a senha
+    def validate_user_email_returning_encrpyt_password(self, email:str):
 
         cursor = self.connection.cursor() #recebo o cursor
         arguments = (email,)
         cursor.execute("SELECT email,senha  FROM tbUsuario WHERE email = %s ",arguments)
         resultado = cursor.fetchone() #caso tenha um valor, é válido,por isso o fetchone
-        return resultado['senha']
+
+        return resultado['senha'] if resultado!=None else False
 
 
     def register_user(self, email:str, password:str):

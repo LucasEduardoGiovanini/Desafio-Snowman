@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify,app #importo a app que é a primeira classe que irá rodar
+from flask import Flask, request, jsonify,app,make_response #importo a app que é a primeira classe que irá rodar
 from werkzeug.datastructures import FileStorage
 import pymysql
 import base64
@@ -8,6 +8,10 @@ import random
 from repositories import PontoTuristicoRepository,UserRepostory
 from http import HTTPStatus
 from auth import *
+import jwt,datetime
+from functools import wraps
+
+
 
 
 use_cases_turismo = Flask(__name__)
@@ -15,7 +19,6 @@ use_cases_turismo = Flask(__name__)
 
 if __name__ == "__main__":
     app.run() #rodo a classe app
-
 
 
 
@@ -37,6 +40,36 @@ def escreve_imagem(data):
         with open('C:/Users/lucas/Desktop/photo test/'+nome_foto+'.png', 'wb') as q:
             q.write(imagem)
 
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        access_token = request.args.get('token')
+        if not(access_token):
+            return jsonify({'message': 'token is missing!'}),401
+
+        try:
+            token().decode_json_web_token(access_token,'johnnyboy')
+        except:
+            return jsonify({'message':'invalid token'}),403
+        return f(*args,**kwargs)
+
+    return decorated
+
+
+
+def login_logica(data):
+    email_usuario = data.get('email')
+    senha_usuario = data.get('senha')
+
+    authorization = validar_usuario_logica(data)
+    print(authorization[1])
+    if(authorization[1] == HTTPStatus.OK): #se a autorização for http OK
+        repository = UserRepostory()
+        database_user_password = repository.validate_user_email_returning_encrpyt_password(email_usuario)
+        return jsonify({'token':token().create_json_web_token(database_user_password)})
+
+    else:
+        return jsonify({'messege': 'Acesso negado!'}), 401
 
 #use case chama a função de encrptar pra senha, encripta e chama a função do repositorio do usuario pra armazenar os dados já encriptados
 def registrar_usuario_logica(data):
@@ -57,7 +90,7 @@ def validar_usuario_logica(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    database_user_password = repository.validate_user_email(email_usuario) #retorna a senha
+    database_user_password = repository.validate_user_email_returning_encrpyt_password(email_usuario) #retorna a senha
     if(database_user_password):
         hash = encrypt()
         validation = hash.validate_user_password(senha_usuario,database_user_password)
