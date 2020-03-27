@@ -59,8 +59,8 @@ def validar_senha_do_usuario(data):
     repository = UserRepostory()
     database_user_password = repository.validate_user_email_and_get_his_password(email_usuario) #retorna a senha
     if(database_user_password):
-        hash = auth.Encrypt()
-        validation = hash.validate_user_password(senha_usuario,database_user_password)
+        encrypt = auth.Encrypt()
+        validation = encrypt.validate_user_password(senha_usuario,database_user_password)
         if(validation == True):
             return jsonify({'messege': 'Usuário válido.'}), 200
         else:
