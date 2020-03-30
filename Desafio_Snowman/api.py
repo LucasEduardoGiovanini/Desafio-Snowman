@@ -31,17 +31,6 @@ def register_user():
     data = request.json
     return registrar_usuario_logica(data)
 
-@app.route("/users/validate", methods=['GET'])  #ver todos os pontos turisticos cadastrados
-def validate_user():
-    data = request.json
-    return validar_senha_do_usuario(data)
-
-    return validar_usuario_logica(data)
-
-
-    return "Inicial", 400  # status code http
-
-
 
 @app.route("/users/seealltouristspot", methods=['GET'])  #ver todos os pontos turisticos cadastrados
 def ver_todos_pontos():
@@ -84,7 +73,6 @@ def comentar_ponto_turistico():
 
 
 @app.route("/users/seecommenttouritspot", methods=['GET'])  # rota para enviar um ponto turistico com base no nome
-@token_required
 def ver_comentarios_pontos_turisticos():
     data = request.json  # solicita o json enviado pelo postman
     return ver_comentario_ponto_turistico_logica(data)
@@ -112,8 +100,7 @@ def favoritar_ponto_turistico():
 @app.route("/users/seefavoritespot", methods=['GET'])  # rota para enviar um ponto turistico com base no nome
 @token_required
 def ver_ponto_turistico_favorito():
-    data = request.json  # solicita o json enviado pelo postman
-    return ver_ponto_turistico_favoritado_logica(data)
+    return ver_ponto_turistico_favoritado_logica()
 
 @app.route("/users/removefavoritespot", methods=['DELETE'])  # rota para enviar um ponto turistico com base no nome
 @token_required
@@ -130,8 +117,8 @@ def upvote_ponto():
 @app.route("/users/seetouristspotcreatedbyme", methods=['GET'])  # rota para enviar um ponto turistico com base no nome
 @token_required
 def ver_pontos_criados_por_mim():
-    data = request.json  # solicita o json enviado pelo postman
-    return ver_pontos_criados_por_mim_logica(data)
+
+    return ver_pontos_criados_por_mim_logica()
 
 
 

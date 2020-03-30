@@ -1,4 +1,6 @@
 import bcrypt,jwt,datetime
+import os
+secret_key = os.urandom(16)
 
 
 class Encrypt:
@@ -13,11 +15,12 @@ class Encrypt:
 
 class Token:
     def create_json_web_token(self,encrypt_password:str):
-        token = jwt.encode({'password': encrypt_password, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)},'johnnyboy')
+
+        token = jwt.encode({'password': encrypt_password, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)},secret_key)
         return (token.decode('UTF-8'))
 
-    def decode_json_web_token(self,token:str,secret_key:str):
-        print(jwt.decode(token,secret_key))
+    def decode_json_web_token(self,token:str):
+
         return jwt.decode(token,secret_key)
 
 
