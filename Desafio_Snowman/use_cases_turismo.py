@@ -1,3 +1,5 @@
+
+
 from flask import Flask, request, jsonify,app,make_response #importo a app que é a primeira classe que irá rodar
 from werkzeug.datastructures import FileStorage
 import pymysql
@@ -8,6 +10,7 @@ import random
 from repositories import PontoTuristicoRepository,UserRepostory
 from http import HTTPStatus
 import auth
+from functools import wraps
 
 
 
@@ -41,6 +44,35 @@ def escreve_imagem(data):
         with open('C:/Users/lucas/Desktop/photo test/'+nome_foto+'.png', 'wb') as q:
             q.write(imagem)
 
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        access_token = request.args.get('token')
+        if not(access_token):
+            return jsonify({'message': 'token is missing!'}),401
+
+        try:
+            auth.Token().decode_json_web_token(access_token,'johnnyboy')
+        except:
+            return jsonify({'message':'invalid token'}),403
+        return f(*args,**kwargs)
+
+    return decorated
+
+
+def login_logica(data):
+    email_usuario = data.get('email')
+    senha_usuario = data.get('senha')
+
+    authorization = validar_senha_do_usuario(data)
+    print(authorization[1])
+    if(authorization[1] == HTTPStatus.OK): #se a autorização for http OK
+        repository = UserRepostory()
+        database_user_password = repository.validate_user_email_and_get_his_password(email_usuario)
+        return jsonify({'token':auth.Token().create_json_web_token(database_user_password)})
+
+    else:
+        return jsonify({'messege': 'Acesso negado!'}), 401
 
 #use case chama a função de encrptar pra senha, encripta e chama a função do repositorio do usuario pra armazenar os dados já encriptados
 def registrar_usuario_logica(data):
@@ -61,11 +93,11 @@ def validar_senha_do_usuario(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-<<<<<<< Updated upstream
+
     database_user_password = repository.validate_user_email_and_get_his_password(email_usuario) #retorna a senha
-=======
-    database_user_password = repository.validate_user_email_returning_encrpyt_password(email_usuario) #retorna a senha
->>>>>>> Stashed changes
+
+
+
     if(database_user_password):
         encrypt = auth.Encrypt()
         validation = encrypt.validate_user_password(senha_usuario,database_user_password)
@@ -91,7 +123,7 @@ def pontos_turisticos_5km_logica(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    user_registered = repository.user_validation(email_usuario, senha_usuario) #primeiro trato da validação
+    user_registered = repository.validate_user_email_and_get_his_password(email_usuario, senha_usuario) #primeiro trato da validação
 
     if(user_registered == False):#se o login não for autorizado
         return jsonify({'messege': 'login ou senha incorretos'}), 401
@@ -136,7 +168,7 @@ def registrar_ponto_turistico_logica(data):
     #---------------
     categoria_ponto = categoria_ponto.lower().capitalize()
     repository = UserRepostory()
-    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    user_registered = repository.validate_user_email_and_get_his_password(email_usuario, senha_usuario)
     if(user_registered == False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
@@ -172,7 +204,7 @@ def comentar_ponto_turistico_logica(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    user_registered = repository.user_validation(email_usuario, senha_usuario)  # primeiro trato da validação
+    user_registered = repository.validate_user_email_and_get_his_password(email_usuario, senha_usuario)  # primeiro trato da validação
 
     if (user_registered == False):  # se o login não for autorizado
         return jsonify({'messege': 'login ou senha incorretos'}), 401
@@ -214,7 +246,7 @@ def adicionar_foto_ponto_logica(data):
     decode_picture = base64.b64decode(foto_ponto)  # recebo a foto em base 64 e dou um decode
 
     repository = UserRepostory()
-    user_registered = repository.user_validation(login_usuario, senha_usuario)
+    user_registered = repository.validate_user_email_and_get_his_password(login_usuario, senha_usuario)
     if(user_registered==False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
@@ -234,7 +266,7 @@ def remover_foto_ponto_logica(data):
     cod_foto = data.get('cod_foto')
 
     repository = UserRepostory()
-    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    user_registered = repository.validate_user_email_and_get_his_password(email_usuario, senha_usuario)
 
     if (user_registered == False):  # se o login não for autorizado
         return jsonify({'messege': 'login ou senha incorretos'}), 401
@@ -254,7 +286,7 @@ def favoritar_ponto_turistico_logica(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    user_registered = repository.validate_user_email_and_get_his_password(email_usuario, senha_usuario)
     if(user_registered==False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
@@ -277,7 +309,7 @@ def ver_ponto_turistico_favoritado_logica(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    user_registered = repository.validate_user_email_and_get_his_password(email_usuario, senha_usuario)
     if (user_registered == False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
@@ -295,7 +327,7 @@ def remover_ponto_favoritado_logica(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    user_registered = repository.validate_user_email_and_get_his_password(email_usuario, senha_usuario)
     if(user_registered==False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
@@ -316,7 +348,7 @@ def upvote_ponto_logica(data):
     nome_ponto = data.get('nome')
 
     repository = UserRepostory()
-    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    user_registered = repository.validate_user_email_and_get_his_password(email_usuario, senha_usuario)
     if(user_registered==False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
@@ -335,7 +367,7 @@ def ver_pontos_criados_por_mim_logica(data):
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
-    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    user_registered = repository.validate_user_email_and_get_his_password(email_usuario, senha_usuario)
     if(user_registered==False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:
@@ -355,7 +387,7 @@ def criar_nova_categoria_logica(data):
     nome_categoria=nome_categoria.lower().capitalize() #pego a string e deixo toda em minusculo com apenas a primeira letra maisucula, para seguir o padrão do meu banco
 
     repository = UserRepostory()
-    user_registered = repository.user_validation(email_usuario, senha_usuario)
+    user_registered = repository.validate_user_email_and_get_his_password(email_usuario, senha_usuario)
     if (user_registered == False):
         return jsonify({'messege': 'login ou senha incorretos'}), 401
     else:

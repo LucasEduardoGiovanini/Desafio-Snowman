@@ -1,15 +1,7 @@
 from flask import Flask, request, jsonify, app
 from use_cases_turismo import *
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-from auth import *
 from functools import wraps
-=======
 
-from math import radians, cos, sin, asin, sqrt  # conteudo importado para encontrar pontos por km utilizando formula de haversine
->>>>>>> parent of 86d1039... Add users password encryption
->>>>>>> Stashed changes
 
 import pymysql
 
@@ -25,7 +17,7 @@ if __name__ == "__main__":
 @app.route("/", methods=['POST'])
 def inicial():#passo todos os meus testes
 
-<<<<<<< HEAD
+
     return "Inicial", 200  # status code http
 
 
@@ -42,15 +34,13 @@ def register_user():
 @app.route("/users/validate", methods=['GET'])  #ver todos os pontos turisticos cadastrados
 def validate_user():
     data = request.json
-<<<<<<< Updated upstream
     return validar_senha_do_usuario(data)
-=======
+
     return validar_usuario_logica(data)
-=======
+
 
     return "Inicial", 400  # status code http
->>>>>>> parent of 86d1039... Add users password encryption
->>>>>>> Stashed changes
+
 
 
 @app.route("/users/seealltouristspot", methods=['GET'])  #ver todos os pontos turisticos cadastrados
