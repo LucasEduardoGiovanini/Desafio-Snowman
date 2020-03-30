@@ -61,16 +61,15 @@ insert into tbCategorias(nome) values ("Museu");
 insert into tbCategorias(nome) values ("Teatro");
 insert into tbCategorias(nome) values ("Monumento");
 
-insert into tbUsuario (email,senha) values("lucas_giovanini","lucasgiovanini");
-insert into tbUsuario (email,senha) values("josias","josias1");
 
-insert into tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) values ("parque zumbi",1,-25.511144,-49.307653,"josias");
-insert into tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) values ("Passeio Público",1,-25.511144,-49.307653,"josias");
-insert into tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) values ("parque barigui",1,30,40,"josias");
 
-insert into  tbPontoFavoritado (email,nome) values("josias","parque barigui");
+insert into tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) values ("parque zumbi",1,-25.511144,-49.307653,"johnny_boy");
+insert into tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) values ("Passeio Público",1,-25.511144,-49.307653,"johnny_boy");
+insert into tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) values ("parque barigui",1,30,40,"lucas_giovanini");
 
-insert into tbComentario (email,nome,descricao) values ("josias","parque barigui","um parque muito bonito e agradavel");
+insert into  tbPontoFavoritado (email,nome) values("lucas_giovanini","parque barigui");
+
+insert into tbComentario (email,nome,descricao) values ("johnny_boy","parque barigui","um parque muito bonito e agradavel");
 insert into tbComentario (email,nome,descricao) values ("lucas_giovanini","parque barigui","legal e divertido");
 
 insert into tbUpvote(nome,quantidade_upvote) VALUES ("parque barigui",0);
@@ -86,3 +85,4 @@ select * from tbCategorias;
 select * from tbComentario;
 select*from tbUpvote;
 select * from tbImagem_ponto;
+select * from tbPontoFavoritado;
