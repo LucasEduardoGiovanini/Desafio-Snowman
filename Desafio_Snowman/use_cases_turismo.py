@@ -1,6 +1,4 @@
-
-
-from flask import Flask, request, jsonify,app,make_response #importo a app que é a primeira classe que irá rodar
+from flask import Flask, request, jsonify,app,make_response
 from werkzeug.datastructures import FileStorage
 import pymysql
 import base64
@@ -13,18 +11,10 @@ import auth
 from functools import wraps
 
 
-
-
-
 use_cases_turismo = Flask(__name__)
 
-
 if __name__ == "__main__":
-    app.run() #rodo a classe app
-
-
-
-
+    app.run()
 
 
 def haversine(lon1, lat1, lon2, lat2):  # def que aplica a formula de haversine para encontrar pontos num raio de 5km
@@ -38,6 +28,26 @@ def haversine(lon1, lat1, lon2, lat2):  # def que aplica a formula de haversine 
     r = 6371
     return c * r
 
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        data = request.json
+        access_token = request.headers.get("Authorization") #chega o token com bearer precedendo ele
+
+        if not(access_token):
+            return jsonify({'message': 'token is missing!'}),401
+
+        access_token = access_token.split(" ")[1] #removo o bearer com o split
+        try:
+            auth.Token().decode_json_web_token(access_token) #chamo minha função decode que retorna o email contido no token
+        except:
+            return jsonify({'message':'invalid token'}),403
+
+        return f(*args, **kwargs)
+
+    return decorated
+
+
 def escreve_imagem(data):
     for x in data:
         imagem = x['foto']
@@ -45,56 +55,36 @@ def escreve_imagem(data):
         with open('C:/Users/lucas/Desktop/photo test/'+nome_foto+'.png', 'wb') as q:
             q.write(imagem)
 
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        access_token = request.args.get('token')
-        if not(access_token):
-            return jsonify({'message': 'token is missing!'}),401
 
-        try:
-            auth.Token().decode_json_web_token(access_token)
-        except:
-            return jsonify({'message':'invalid token'}),403
-
-        return f(*args,**kwargs)
-
-    return decorated
-
-def validar_senha_do_usuario(data):
+def validar_email_senha_do_usuario(data):
     email_usuario = data.get('email')
     senha_usuario = data.get('senha')
 
     repository = UserRepostory()
     encrypted_password = repository.get_encrypt_password(email_usuario)
 
-    if(encrypted_password!=None):
+    if(encrypted_password!=False):
         encrypt = auth.Encrypt()
-        validation = encrypt.validate_user_password(senha_usuario,encrypted_password)
-        if(validation == True):
-            return jsonify({'messege': 'Usuário válido.'}), 200
-        else:
-            return jsonify({'messege': 'Usuário inválido.'}), 403
-    else:
-        return jsonify({'messege': 'Usuário não localizado.'}), 404
+        approved_password = encrypt.validate_user_password(senha_usuario,encrypted_password)
+        if(approved_password == True):
+            return True
 
+    return False
 
 
 def login_logica(data):
     email_usuario = data.get('email')
     senha_usuario = data.get('senha')
 
-    authorization = validar_senha_do_usuario(data)
-    if(authorization[1] == HTTPStatus.OK): #se a autorização for http OK
+    authorization = validar_email_senha_do_usuario(data)
+    if(authorization == True):
         repository = UserRepostory()
-        database_user_password = repository.get_encrypt_password(email_usuario)
-        return jsonify({'token':auth.Token().create_json_web_token(database_user_password)})
+        return jsonify({'token':auth.Token().create_json_web_token(email_usuario)})
     else:
         return jsonify({'messege': 'Acesso negado!'}), 401
 
 
 def registrar_usuario_logica(data):
-
     email_usuario = data.get('email')
     senha_usuario = data.get('senha')
 
@@ -115,40 +105,34 @@ def ver_todos_pontos_logica():
 def pontos_turisticos_5km_logica(data):
     latitude_usuario = data.get('lat')
     longitude_usuario = data.get('long')
-    access_token = request.args.get('token')
+    access_token = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
 
-    decoded_token = auth.Token().decode_json_web_token(access_token)
-
-    repository = UserRepostory()
-    email_user_registered = repository.validate_user_password_returning_email(decoded_token['password']) #primeiro trato da validação
-
-    if(email_user_registered == False):#se o login não for autorizado
-        return jsonify({'messege': 'token inválido'}), 401
+    repository = PontoTuristicoRepository()
+    points = repository.search_points()
+    resultado = points
+    dado = list()
+    for x in resultado:  #como temos varios pontos, preciso percorrer todos, pegar seus dados e compara-los utilizando a formula
+        distancia_km = haversine(float(longitude_usuario), float(latitude_usuario), float(x['longitude']), float(x['latitude']))     # aplico a latitude e longitude dos dois pontos na formula de haversine para obter a distancia em km
+        if (distancia_km <= 5):
+            x['distancia em Km'] = round(distancia_km, 2)
+            dado.append(x)
+    if (not dado):
+        return jsonify({'resultado': 'nenhum ponto foi encontrado'}), 404
     else:
-        # se o meu login for autorizado eu realizo a busca pelos pontos,
-        repository = PontoTuristicoRepository()
-        points = repository.search_points()
-        resultado = points
-        dado = list()
-        for x in resultado:  #como temos varios pontos, preciso percorrer todos, pegar seus dados e compara-los utilizando a formula
-            distancia_km = haversine(float(longitude_usuario), float(latitude_usuario), float(x['longitude']), float(x['latitude']))     # aplico a latitude e longitude dos dois pontos na formula de haversine para obter a distancia em km
-            if (distancia_km <= 5):
-                x['distancia em Km'] = round(distancia_km, 2)
-                dado.append(x)
-        if (not dado):
-            return jsonify({'resultado': 'nenhum ponto foi encontrado'}), 404
-        else:
-            return jsonify({'resultado ': dado}), 200  # status code http
+        return jsonify({'resultado ': dado}), 200  # status code http
 
 
 def pontos_turisticos_por_nome_logica(data):
-    ponto = data.get('spot')  # pega o valor seguido se spot
-    repository = PontoTuristicoRepository() #chama a classe que faz as ligações com o banco
+    access_token = request.headers.get("Authorization")
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
+    ponto = data.get('spot')
+    repository = PontoTuristicoRepository()
     ponto = repository.get_ponto_turistico_by_name(ponto)
     if(not ponto):
         return jsonify({'message':'O ponto informado não existe'}),404
     else:
-        return jsonify({'Pontos':ponto}), 200  # status code http
+        return jsonify({'Pontos':ponto}), 200
 
 
 def registrar_ponto_turistico_logica(data):
@@ -158,67 +142,48 @@ def registrar_ponto_turistico_logica(data):
     longitude_ponto = data.get('longitude')
     categoria_ponto = data.get('categoria')
     foto_ponto = data.get('foto')
-    access_token = request.args.get('token')
+    access_token = request.headers.get("Authorization")
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
 
-    decoded_token = auth.Token().decode_json_web_token(access_token)
-    # picture decode (base 64) -------------------------------------------
-    decode_picture = base64.b64decode(foto_ponto) #recebo a foto em base 64 e dou um decode
-    #---------------
+    decode_picture = base64.b64decode(foto_ponto)
+
     categoria_ponto = categoria_ponto.lower().capitalize()
-    repository = UserRepostory()
-    email_user_registered = repository.validate_user_password_returning_email(decoded_token['password']) #primeiro trato da validação
 
-    if(email_user_registered == False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 401
+    repository = PontoTuristicoRepository()
+    point_exists = repository.check_existence_of_the_point(nome_ponto)
+    if(point_exists):
+        return jsonify({'message': 'esse ponto já foi cadastrado!'}), 403
     else:
-        repository = PontoTuristicoRepository()
-        point_exists = repository.check_existence_of_the_point(nome_ponto)
+        category_exist = repository.check_existence_of_category(categoria_ponto)
 
-        if(point_exists):
-            return jsonify({'message': 'esse ponto já foi cadastrado!'}), 403  # proibido
-        else:
-            category_exist = repository.check_existence_of_category(categoria_ponto)
+        if(category_exist == False):
+            cod_category = repository.create_category(categoria_ponto)
+            category_exist = repository.check_existence_of_category(categoria_ponto) #solicito novamente a verificação da categoria, para que possa entrar no elif abaixo
+            print(category_exist)
+            jsonify({'Mensagem': 'categoria criada com sucesso!'})
 
-            if(category_exist == False):
-                cod_category = repository.create_category(categoria_ponto)
-                category_exist = repository.check_existence_of_category(categoria_ponto) #solicito novamente a verificação da categoria, para que possa entrar no elif abaixo
-                print(category_exist)
-                jsonify({'Mensagem': 'categoria criada com sucesso!'})  # status code http
+        if(category_exist):
+             extract_cod_category = int(category_exist['cod'])
+             repository.create_tourist_point(nome_ponto,extract_cod_category,latitude_ponto,longitude_ponto,email_usuario)
 
-            if(category_exist):
-                 extract_cod_category = int(category_exist['cod'])
-                 repository.create_tourist_point(nome_ponto,extract_cod_category,latitude_ponto,longitude_ponto,email_user_registered)
-
-
-                 if(foto_ponto!=None):# se o usuário tiver enviado uma foto do ponto, cadastramos
-                    repository.add_picture_spot(foto_ponto,nome_ponto,email_user_registered) #adicionamos a foto do ponto
-            return jsonify({'messege': 'ponto cadastrado com sucesso!'}), 200
-
-
+             if(foto_ponto!=None):# se o usuário tiver enviado uma foto do ponto, cadastramos
+                repository.add_picture_spot(foto_ponto,nome_ponto,email_usuario) #adicionamos a foto do ponto
+        return jsonify({'messege': 'ponto cadastrado com sucesso!'}), 200
 
 
 def comentar_ponto_turistico_logica(data):
-    nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
+    nome_ponto = data.get('nome')
     descricao_comentario = data.get('comentario')
-    access_token = request.args.get('token')
+    access_token = request.headers.get("Authorization")
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
 
-    decoded_token = auth.Token().decode_json_web_token(access_token)
-
-    repository = UserRepostory()
-    email_user_registered = repository.validate_user_password_returning_email(decoded_token['password'])
-
-    if (email_user_registered == False):  # se o login não for autorizado
-        return jsonify({'messege': 'login ou senha incorretos'}), 401
+    repository = PontoTuristicoRepository()
+    point_exists = repository.check_existence_of_the_point(nome_ponto)
+    if(point_exists):
+        repository.create_comment_about_point(email_usuario, nome_ponto, descricao_comentario)
+        return jsonify({'message': 'comentário cadastrado com sucesso!'}), 200  # proibido
     else:
-        repository = PontoTuristicoRepository()
-        point_exists = repository.check_existence_of_the_point(nome_ponto)
-        if(point_exists):
-            repository.create_comment_about_poin(email_user_registered,nome_ponto,descricao_comentario)
-            return jsonify({'message': 'comentário cadastrado com sucesso!'}), 200  # proibido
-
-        else:
-            return jsonify({'message': 'o ponto informado não existe.'}), 404  # proibido
-
+        return jsonify({'message': 'o ponto informado não existe.'}), 404  # proibido
 
 def ver_comentario_ponto_turistico_logica(data):
     nome_ponto = data.get('nome')
@@ -227,183 +192,133 @@ def ver_comentario_ponto_turistico_logica(data):
     if(point_exist):
         comments = repository.search_comments(nome_ponto)
         if(comments==None):
-            return jsonify({'message': 'parece que esse ponto ainda não possui comentários'}), 200  # proibido
+            return jsonify({'message': 'parece que esse ponto ainda não possui comentários'}), 200
         else:
             list_comments=list() #os comentários serão inseridos na lista para que retorne com um formato adequado.
-
             for comment in comments:
                 list_comments.append(comment['descricao'])
-            return jsonify({'comentário(s)\n':list_comments}), 200  # proibido
-
+            return jsonify({'comentário(s)\n':list_comments}), 200
     else:
-        return jsonify({'message': 'o ponto informado não existe.'}), 404  # proibido
+        return jsonify({'message': 'o ponto informado não existe.'}), 404
 
 
 def adicionar_foto_ponto_logica(data):
-
     nome_ponto = data.get('nome')
     foto_ponto = data.get('foto')
     access_token = request.args.get('token')
-    decoded_token = auth.Token().decode_json_web_token(access_token)
-    decode_picture = base64.b64decode(foto_ponto)  # recebo a foto em base 64 e dou um decode
+    access_token = request.headers.get("Authorization")
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
+    decode_picture = base64.b64decode(foto_ponto)
 
-    repository = UserRepostory()
-    email_user_registered = repository.validate_user_password_returning_email(decoded_token['password'])
-    if(email_user_registered==False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 401
+    repository = PontoTuristicoRepository()
+    point_exists = repository.check_existence_of_the_point(nome_ponto)
+    if(not point_exists):
+        return jsonify({'messege': 'o ponto informado não existe!'}), 403
     else:
-        repository = PontoTuristicoRepository()
-        point_exists = repository.check_existence_of_the_point(nome_ponto)
-        if(not point_exists):
-            return jsonify({'messege': 'o ponto informado não existe!'}), 403
-        else:
-            repository.add_picture_spot(foto_ponto,nome_ponto,email_user_registered)
-            return jsonify({'messege': 'foto cadastrada com sucesso!'}), 200
+        repository.add_picture_spot(foto_ponto,nome_ponto,email_usuario)
+        return jsonify({'messege': 'foto cadastrada com sucesso!'}), 200
 
 
 
 def remover_foto_ponto_logica(data):
     cod_foto = data.get('cod_foto')
-    access_token = request.args.get('token')
-    decoded_token = auth.Token().decode_json_web_token(access_token)
+    access_token = request.headers.get("Authorization")
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
 
     repository = UserRepostory()
-    email_user_registered = repository.validate_user_password_returning_email(decoded_token['password'])
-
-    if (email_user_registered == False):  # se o login não for autorizado
-        return jsonify({'messege': 'login ou senha incorretos'}), 401
+    repository = PontoTuristicoRepository()
+    photo_exist = repository.search_picture(cod_foto)
+    if(photo_exist):
+        photo_deleted = repository.delete_picture(cod_foto,email_usuario)
+        return jsonify({'messege': 'foto apagada com sucesso'}), 200
     else:
-        repository = PontoTuristicoRepository()
-        photo_exist = repository.search_picture(cod_foto)
-        if(photo_exist):
-            photo_deleted = repository.delete_picture(cod_foto,email_user_registered)
-            return jsonify({'messege': 'foto apagada com sucesso'}), 200
-        else:
-            return jsonify({'messege': 'foto não encontrada'}), 404
+        return jsonify({'messege': 'foto não encontrada'}), 404
 
 
 def favoritar_ponto_turistico_logica(data):
-    nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
-    access_token = request.args.get('token')
-    decoded_token = auth.Token().decode_json_web_token(access_token)
+    nome_ponto = data.get('nome')
+    access_token = request.headers.get("Authorization")
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
 
-    repository = UserRepostory()
-    email_user_registered = repository.validate_user_password_returning_email(decoded_token['password'])
-    if(email_user_registered==False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 401
+    repository = PontoTuristicoRepository()
+    point_exists = repository.check_existence_of_the_point(nome_ponto)
+    if(not point_exists):
+        return jsonify({'messege': 'o ponto informado não existe!'}), 404
     else:
-        repository = PontoTuristicoRepository()
-        point_exists = repository.check_existence_of_the_point(nome_ponto)
-        if(not point_exists):
-            return jsonify({'messege': 'o ponto informado não existe!'}), 404
+        repository = UserRepostory()
+        result = repository.favorite_tourist_spot(email_usuario,nome_ponto)
+        if(result==True):
+            return jsonify({'messege': 'ponto favoritado com sucesso!'}), 200
         else:
-            repository = UserRepostory()
-            result = repository.favorite_tourist_spot(email_user_registered,nome_ponto)
-            if(result):
-                return jsonify({'messege': 'ponto favoritado com sucesso!'}), 200
-            else:
-                return jsonify({'messege': 'o ponto já está favoritado'}), 403
-
+            return jsonify({'messege': 'o ponto já está favoritado'}), 403
 
 
 def ver_ponto_turistico_favoritado_logica():
-    access_token = request.args.get('token')
-
-    decoded_token = auth.Token().decode_json_web_token(access_token)
+    access_token = request.headers.get("Authorization")
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
 
     repository = UserRepostory()
-    email_user_registered = repository.validate_user_password_returning_email(decoded_token['password'])
-    if (email_user_registered == False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 401
+    points = repository.search_favorited_spots(email_usuario)
+    if (not points):
+        return jsonify({'messege': 'o ponto informado não existe!'}), 404
     else:
-
-        points = repository.search_favorited_spots(email_user_registered)
-        if (not points):
-            return jsonify({'messege': 'o ponto informado não existe!'}), 404
-        else:
-            return jsonify({'Mensagem': 'sucesso! aqui estão seus pontos!', "ponto": points}), 200
+        return jsonify({'Mensagem': 'sucesso! aqui estão seus pontos!', "ponto": points}), 200
 
 
 def remover_ponto_favoritado_logica(data):
-    nome_ponto = data.get('nome')  # pega o valor armazenado em "nome"
-    access_token = request.args.get('token')
-    decoded_token = auth.Token().decode_json_web_token(access_token)
+    nome_ponto = data.get('nome')
+    access_token = request.headers.get("Authorization")
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
 
-    repository = UserRepostory()
-    email_user_registered = repository.validate_user_password_returning_email(decoded_token['password'])
-    if(email_user_registered==False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 401
+    repository=PontoTuristicoRepository()
+    user_favored_this_point = repository.check_who_favored_point(email_usuario,nome_ponto)
+    if(user_favored_this_point == None):
+        return jsonify({'messege': 'o ponto não foi localizado'}), 404
     else:
-        repository=UserRepostory()
-
-        point_favored = repository.check_who_favored_point(email_user_registered,nome_ponto)
-        if(point_favored == None):
-            return jsonify({'messege': 'o ponto não foi localizado'}), 404
-        else:
-            repository.remove_favorited_tourist_spot(email_user_registered,nome_ponto)
-            return jsonify({'messege': 'ponto removido!'}), 200
-
+        repository = UserRepostory()
+        repository.remove_favorited_tourist_spot(email_usuario,nome_ponto)
+        return jsonify({'messege': 'ponto removido!'}), 200
 
 
 def upvote_ponto_logica(data):
     nome_ponto = data.get('nome')
-    access_token = request.args.get('token')
+    access_token = request.headers.get("Authorization")
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
 
-    decoded_token = auth.Token().decode_json_web_token(access_token)
-
-    repository = UserRepostory()
-    email_user_registered = repository.validate_user_password_returning_email(decoded_token['password'])
-    if(email_user_registered==False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 401
+    repository = PontoTuristicoRepository()
+    point_exists = repository.check_existence_of_the_point(nome_ponto)
+    if(not point_exists):
+        return jsonify({'messege': 'o ponto informado não existe!'}), 404
     else:
-        repository = PontoTuristicoRepository()
-        point_exists = repository.check_existence_of_the_point(nome_ponto)
-        if(not point_exists):
-            return jsonify({'messege': 'o ponto informado não existe!'}), 404
-        else:
-            repository.register_upvote(nome_ponto)
-            return jsonify({'messege': 'ponto favoritado!'}), 200
-
+        repository.register_upvote(nome_ponto)
+        return jsonify({'messege': 'ponto favoritado!'}), 200
 
 
 def ver_pontos_criados_por_mim_logica():
-    access_token = request.args.get('token')
-
-    decoded_token = auth.Token().decode_json_web_token(access_token)
-
+    access_token = request.headers.get("Authorization")
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
     repository = UserRepostory()
-    email_user_registered = repository.validate_user_password_returning_email(decoded_token['password'])
-    if(email_user_registered==False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 401
+    my_points = repository.search_tourist_points_created_by_user(email_usuario)
+    if(my_points == None):
+        return jsonify({'messege': 'parece que você não cadastrou nenhum ponto!'}), 200
     else:
-
-        my_points = repository.search_tourist_points_created_by_user(email_user_registered)
-        if(my_points == None):
-            return jsonify({'messege': 'parece que você não cadastrou nenhum ponto!'}), 200
-        else:
-            return jsonify({'messege': 'aqui estão seus pontos:','ponto(os)':my_points}),200
+        return jsonify({'messege': 'aqui estão seus pontos:','ponto(os)':my_points}),200
 
 
 def criar_nova_categoria_logica(data):
 
     nome_categoria = data.get('categoria')
-    access_token = request.args.get('token')
+    access_token = request.headers.get("Authorization")
+    email_usuario = auth.Token().decode_json_web_token(access_token.split(" ")[1])
 
-    decoded_token = auth.Token().decode_json_web_token(access_token)
+    nome_categoria=nome_categoria.lower().capitalize()
 
-    nome_categoria=nome_categoria.lower().capitalize() #pego a string e deixo toda em minusculo com apenas a primeira letra maisucula, para seguir o padrão do meu banco
+    repository = PontoTuristicoRepository()
+    category_exist=repository.check_existence_of_category(nome_categoria)
 
-    repository = UserRepostory()
-    email_user_registered = repository.validate_user_password_returning_email(decoded_token['password'])
-    if (email_user_registered == False):
-        return jsonify({'messege': 'login ou senha incorretos'}), 401
+    if (category_exist == False):
+        repository.create_category(nome_categoria)
+        return jsonify({'messege': 'categoria criada com sucesso!'}), 200
     else:
-        repository = PontoTuristicoRepository()
-        category_exist=repository.check_existence_of_category(nome_categoria)
-
-        if (category_exist == False):
-            repository.create_category(nome_categoria)
-            return jsonify({'messege': 'categoria criada com sucesso!'}), 200
-        else:
-            return jsonify({'messege': 'essa categoria já existe.'}), 403
+        return jsonify({'messege': 'essa categoria já existe.'}), 403
 
