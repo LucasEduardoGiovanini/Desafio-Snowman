@@ -11,8 +11,6 @@ class PontoTuristicoRepository:
                                 cursorclass=pymysql.cursors.DictCursor)
 
 
-
-
     def get_ponto_turistico_by_name(self, name: str):
         cursor = self.connection.cursor()
         arguments = (name,)
@@ -56,7 +54,7 @@ class PontoTuristicoRepository:
         self.connection.commit()
         cursor.execute("SELECT cod FROM tbCategorias WHERE nome = %s",arguments)#busco o código da categoria para realizar operações futuras
         cod_category = cursor.fetchone()
-        return cod_category #retorno o código da categoria recém criada
+        return cod_category
 
     def add_picture_spot(self,foto: str,nome: str, email:str):
         cursor = self.connection.cursor()
@@ -64,7 +62,7 @@ class PontoTuristicoRepository:
         cursor.execute("INSERT INTO tbImagem_ponto(foto,nome,email) VALUES(%s,%s,%s)",arguments)
         self.connection.commit()
 
-    def create_tourist_point(self,nome: str,categoria: int,latitude: float,longitude: float,criador_ponto: str):
+    def create_tourist_point_and_upvote(self, nome: str, categoria: int, latitude: float, longitude: float, criador_ponto: str):
         cursor = self.connection.cursor()
         arguments=(nome,categoria,latitude,longitude,criador_ponto)
         cursor.execute("INSERT INTO tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) VALUES (%s,%s,%s,%s,%s)",arguments)
@@ -73,9 +71,14 @@ class PontoTuristicoRepository:
         cursor.execute("INSERT INTO tbUpvote(nome,quantidade_upvote) VALUES (%s,0)", arguments)
         self.connection.commit()
 
+    def check_who_favored_point(self,email:str,nome:str):
+        cursor = self.connection.cursor();
+        arguments = (email, nome)
+        cursor.execute("SELECT nome FROM tbPontoFavoritado WHERE email=%s and nome=%s", arguments)
+        result = cursor.fetchone()
+        return result
 
-
-    def create_comment_about_poin(self,email:str, nome:str, descricao: str):
+    def create_comment_about_point(self, email:str, nome:str, descricao: str):
         cursor = self.connection.cursor()
         arguments = (email, nome, descricao)
         cursor.execute("INSERT INTO tbComentario (email,nome,descricao) VALUES (%s,%s,%s)",arguments)
@@ -111,6 +114,7 @@ class PontoTuristicoRepository:
         print(new_arguments)
         cursor.execute("UPDATE tbUpvote SET quantidade_upvote = %s WHERE nome = %s",new_arguments)
         self.connection.commit()
+        return True
 
 
 

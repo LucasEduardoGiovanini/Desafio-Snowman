@@ -9,49 +9,36 @@ class UserRepostory:
                                 db='DBturismo',
                                 cursorclass=pymysql.cursors.DictCursor)
 
-    def user_exists(self,email:str): #checo apenas se o email dele consta no banco
+    def verify_email(self,email:str):
         cursor = self.connection.cursor()
         arguments = (email,)
+        cursor.execute("SELECT senha FROM tbUsuario WHERE email=%s", arguments)
+        result = cursor.fetchone()
+        return True if result else False
 
-        cursor.execute("SELECT email FROM tbUsuario WHERE email=%s",arguments)
+    def get_encrypt_password(self,email:str):
+        cursor = self.connection.cursor()
+        arguments = (email,)
+        cursor.execute("SELECT senha FROM tbUsuario WHERE email=%s",arguments)
         result=cursor.fetchone()
-        return result
+        return result['senha'] if result!=None else False
 
 
-    def validate_user_email_and_get_his_password(self, email:str): #se o email é valido, retornamos a senha
-
-        cursor = self.connection.cursor() #recebo o cursor
-        arguments = (email,)
-        cursor.execute("SELECT email,senha  FROM tbUsuario WHERE email = %s ",arguments)
-        resultado = cursor.fetchone() #caso tenha um valor, é válido,por isso o fetchone
-        return resultado['senha'] if resultado!=None else False
-
-
-    def register_user(self, email:str, password:str):
+    def insert_user(self, email:str, password:str):
         cursor=self.connection.cursor()
-        user_already_registered=self.user_exists(email)
+        arguments = (email, password)
+        cursor.execute("INSERT INTO tbUsuario (email,senha) VALUES(%s,%s)", arguments)
+        self.connection.commit()
+        return True
 
-        if(user_already_registered):
-            return False
-        else:
-            arguments = (email,password)
-            cursor.execute("INSERT INTO tbUsuario (email,senha) VALUES(%s,%s)",arguments)
-            self.connection.commit()
-            return True
-
-
-
-    def favorite_tourist_spot(self,email:str, nome:str):
+    def select_all_favored_spots_from_user(self,email:str):
         cursor = self.connection.cursor()
-        arguments = (email,nome)
-        cursor.execute("SELECT nome FROM tbPontoFavoritado WHERE email = %s and nome=%s",arguments) #confiro se já não foi favoritado
-        verification = cursor.fetchall()
-        if(not verification):
-            cursor.execute("INSERT INTO tbPontoFavoritado(email,nome) VALUES (%s,%s)",arguments)
-            self.connection.commit()
-            return True #o ponto não existia e cadastramos ele
-        else:
-            return False #o ponto exisita então não foi cadastrado
+        arguments = (email,)
+        cursor.execute("SELECT nome FROM tbPontoFavoritado WHERE email = %s",arguments)  # confiro se já não foi favoritado
+        spots = cursor.fetchall()
+        return spots
+
+
 
     def search_favorited_spots(self,email:str):
         cursor = self.connection.cursor()
@@ -65,13 +52,8 @@ class UserRepostory:
         arguments=(email,nome)
         cursor.execute("DELETE FROM tbPontoFavoritado WHERE email=%s and nome=%s",arguments)
         self.connection.commit()
+        return True
 
-    def check_who_favored_point(self,email:str,nome:str):
-        cursor = self.connection.cursor();
-        arguments = (email, nome)
-        cursor.execute("SELECT nome FROM tbPontoFavoritado WHERE email=%s and nome=%s", arguments)
-        result = cursor.fetchone()
-        return result
 
     def search_tourist_points_created_by_user(self,email:str):
         cursor = self.connection.cursor()
