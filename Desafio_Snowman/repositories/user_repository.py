@@ -9,6 +9,12 @@ class UserRepostory:
                                 db='DBturismo',
                                 cursorclass=pymysql.cursors.DictCursor)
 
+    def verify_email(self,email:str):
+        cursor = self.connection.cursor()
+        arguments = (email,)
+        cursor.execute("SELECT senha FROM tbUsuario WHERE email=%s", arguments)
+        result = cursor.fetchone()
+        return True if result else False
 
     def get_encrypt_password(self,email:str):
         cursor = self.connection.cursor()
@@ -18,30 +24,21 @@ class UserRepostory:
         return result['senha'] if result!=None else False
 
 
-    def register_user(self, email:str, password:str):
+    def insert_user(self, email:str, password:str):
         cursor=self.connection.cursor()
-        user_already_registered=self.get_encrypt_password(email) #reaproveito a get_encrypt para validar usuário
-        print(user_already_registered)
-        if  user_already_registered !=False:
+        arguments = (email, password)
+        cursor.execute("INSERT INTO tbUsuario (email,senha) VALUES(%s,%s)", arguments)
+        self.connection.commit()
+        return True
 
-            return False
-        else:
-            arguments = (email, password)
-            cursor.execute("INSERT INTO tbUsuario (email,senha) VALUES(%s,%s)", arguments)
-            self.connection.commit()
-            return True
-
-    def favorite_tourist_spot(self,email:str, nome:str):
+    def select_all_favored_spots_from_user(self,email:str):
         cursor = self.connection.cursor()
-        arguments = (email,nome)
-        cursor.execute("SELECT nome FROM tbPontoFavoritado WHERE email = %s and nome=%s",arguments) #confiro se já não foi favoritado
-        verification = cursor.fetchall()
-        if(not verification):
-            cursor.execute("INSERT INTO tbPontoFavoritado(email,nome) VALUES (%s,%s)",arguments)
-            self.connection.commit()
-            return True #o ponto não existia e cadastramos ele
-        else:
-            return False #o ponto exisita então não foi cadastrado
+        arguments = (email,)
+        cursor.execute("SELECT nome FROM tbPontoFavoritado WHERE email = %s",arguments)  # confiro se já não foi favoritado
+        spots = cursor.fetchall()
+        return spots
+
+
 
     def search_favorited_spots(self,email:str):
         cursor = self.connection.cursor()

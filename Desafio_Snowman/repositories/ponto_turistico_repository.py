@@ -62,7 +62,7 @@ class PontoTuristicoRepository:
         cursor.execute("INSERT INTO tbImagem_ponto(foto,nome,email) VALUES(%s,%s,%s)",arguments)
         self.connection.commit()
 
-    def create_tourist_point(self,nome: str,categoria: int,latitude: float,longitude: float,criador_ponto: str):
+    def create_tourist_point_and_upvote(self, nome: str, categoria: int, latitude: float, longitude: float, criador_ponto: str):
         cursor = self.connection.cursor()
         arguments=(nome,categoria,latitude,longitude,criador_ponto)
         cursor.execute("INSERT INTO tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) VALUES (%s,%s,%s,%s,%s)",arguments)

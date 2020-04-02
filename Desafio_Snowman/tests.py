@@ -3,9 +3,6 @@ from use_cases_turismo import *
 #from flask_api import status #precisei remover pois acusava erro na API
 from app import app
 
-if __name__ == '__main__':
-    unittest.main()
-
 class test_for_tourist_points(unittest.TestCase):
     def teste_registrar_ponto_turistico(self):
 
@@ -41,7 +38,7 @@ class test_for_tourist_points(unittest.TestCase):
     def teste_pontos_turisticos_por_nome(self):
         with app.app_context():
             data = {
-                "spot":"praça do teste"
+                "spot":"parque barigui"
                 }
             response = pontos_turisticos_por_nome_logica(data)
             self.assertEqual(response[1],status.HTTP_200_OK)
