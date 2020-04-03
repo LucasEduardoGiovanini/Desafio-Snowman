@@ -120,7 +120,7 @@ def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,c
     else:
         category_exist = repository.check_existence_of_category(categoria_ponto)
 
-        if(category_exist == False): #nesse caso eu preciso manter a verificação de booleano, pois preciso obter o falso primeiro, para saber se devo criar essa categoria antes de passar par a proxima condição
+        if not category_exist : #nesse caso eu preciso manter a verificação de booleano, pois preciso obter o falso primeiro, para saber se devo criar essa categoria antes de passar par a proxima condição
             cod_category = repository.create_category(categoria_ponto)
             category_exist = repository.check_existence_of_category(categoria_ponto) #solicito novamente a verificação da categoria, para que possa entrar no elif abaixo
             print(category_exist)
@@ -130,8 +130,8 @@ def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,c
              extract_cod_category = int(category_exist['cod'])
              repository.create_tourist_point_and_upvote(nome_ponto, extract_cod_category, latitude_ponto, longitude_ponto, email_usuario)
 
-             if foto_ponto:# se o usuário tiver enviado uma foto do ponto, cadastramos
-                repository.add_picture_spot(foto_ponto,nome_ponto,email_usuario) #adicionamos a foto do ponto
+             if foto_ponto:
+                repository.add_picture_spot(foto_ponto,nome_ponto,email_usuario)
         return jsonify({'messege': 'ponto cadastrado com sucesso!'}), 200
 
 
@@ -144,9 +144,9 @@ def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuari
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if point_exists :
         repository.create_comment_about_point(email_usuario, nome_ponto, descricao_comentario)
-        return jsonify({'message': 'comentário cadastrado com sucesso!'}), 200  # proibido
+        return jsonify({'message': 'comentário cadastrado com sucesso!'}), 200
     else:
-        return jsonify({'message': 'o ponto informado não existe.'}), 404  # proibido
+        return jsonify({'message': 'o ponto informado não existe.'}), 404
 
 def ver_comentario_ponto_turistico_logica(nome_ponto):
     repository = PontoTuristicoRepository()
