@@ -38,10 +38,8 @@ def pontos_turisticos_5km():
     access_token = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
     decoded_token = auth.Token().decode_json_web_token(access_token.split(" ")[1])
     email_user = decoded_token['email']
-    data = request.json
-    latitude_usuario = data.get('lat')
-    longitude_usuario = data.get('long')
-    return pontos_turisticos_5km_logica(latitude_usuario,longitude_usuario,email_user)
+    data = adapter.adapter_coordenates_spot()
+    return pontos_turisticos_5km_logica(*data,email_user)
 
 @app.route("/users/touristSpotName", methods=['GET'])
 @Token.token_required
@@ -49,9 +47,8 @@ def pontos_turisticos_por_nome():
     access_token = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
     decoded_token = auth.Token().decode_json_web_token(access_token.split(" ")[1])
     email_user = decoded_token['email']
-    data = request.json
-    ponto = data.get('spot')
-    return pontos_turisticos_por_nome_logica(ponto,email_user)
+    data = adapter.adapter_name_spot()
+    return pontos_turisticos_por_nome_logica(data,email_user)
 
 @app.route("/users/registertouristspot", methods=['POST'])
 @Token.token_required
@@ -69,10 +66,8 @@ def comentar_ponto_turistico():
     access_token = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
     decoded_token = auth.Token().decode_json_web_token(access_token.split(" ")[1])
     email_user = decoded_token['email']
-    data = request.json
-    nome_ponto = data.get('nome')
-    descricao_comentario = data.get('comentario')
-    return comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_user)
+    data = adapter.adapter_comment_spot()
+    return comentar_ponto_turistico_logica(*data,email_user)
 
 @app.route("/users/seecommenttouritspot", methods=['GET'])
 def ver_comentarios_pontos_turisticos():
