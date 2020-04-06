@@ -24,7 +24,7 @@ def adapter_coordenates_spot():
 
 def adapter_name_spot():
     data = request.json
-    ponto = data.get('spot')
+    ponto = data.get('nome')
     return ponto
 
 def adapter_comment_spot():

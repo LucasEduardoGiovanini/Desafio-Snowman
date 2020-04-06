@@ -147,9 +147,11 @@ def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuari
         return jsonify({'message': 'o ponto informado não existe.'}), 404
 
 def ver_comentario_ponto_turistico_logica(nome_ponto):
+
     repository = PontoTuristicoRepository()
     point_exist = repository.check_existence_of_the_point(nome_ponto)
-    if point_exist :
+    print(point_exist)
+    if point_exist:
         comments = repository.search_comments(nome_ponto)
         if not comments:
             return jsonify({'message': 'parece que esse ponto ainda não possui comentários'}), 200

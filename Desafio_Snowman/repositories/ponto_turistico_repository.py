@@ -30,8 +30,10 @@ class PontoTuristicoRepository:
     def check_existence_of_the_point(self, name: str):
         cursor = self.connection.cursor()
         arguments = (name,)
+
         cursor.execute("SELECT nome, categoria, latitude, longitude FROM tbPontoTuristico WHERE nome = %s", arguments)
         resultado = cursor.fetchone()
+        print(resultado)
         if not resultado:
             return False
         else:
