@@ -139,7 +139,6 @@ def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuari
     nome_ponto = data.get('nome')
     descricao_comentario = data.get('comentario')
 
-
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if point_exists :
@@ -166,7 +165,6 @@ def ver_comentario_ponto_turistico_logica(nome_ponto):
 
 def adicionar_foto_ponto_logica(data,email_usuario):
     decode_picture = base64.b64decode(foto_ponto)
-
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if point_exists :

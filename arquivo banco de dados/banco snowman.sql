@@ -75,6 +75,7 @@ insert into tbComentario (email,nome,descricao) values ("lucas_giovanini","parqu
 insert into tbUpvote(nome,quantidade_upvote) VALUES ("parque barigui",0);
 insert into tbUpvote(nome,quantidade_upvote) VALUES ("parque zumbi",0);
 
+delete from tbUsuario WHERE email = "lucas_giovanini11";
 
 
 
