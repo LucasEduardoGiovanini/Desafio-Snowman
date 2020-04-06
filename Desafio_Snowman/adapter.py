@@ -17,7 +17,7 @@ def adapter_user_datas():
 
 def adapter_token_email():
     access_token = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
-    decoded_token = auth.Token().decode_json_web_token(access_token.split(" ")[1])
+    decoded_token = auth.decode_json_web_token(access_token.split(" ")[1])
     email_user = decoded_token['email']
     return email_user
 
