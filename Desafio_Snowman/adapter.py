@@ -49,3 +49,8 @@ def adapter_cod_picture_spot():
     data = request.json
     cod_foto = data.get('cod_foto')
     return cod_foto
+
+def adapter_category_spot():
+    data = request.json
+    nome_categoria = data.get('categoria')
+    return nome_categoria

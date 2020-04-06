@@ -82,55 +82,40 @@ def remover_foto_ponto():
 @app.route("/users/favoriteaspot", methods=['POST'])
 @Token.token_required
 def favoritar_ponto_turistico():
-    access_token = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
-    decoded_token = auth.Token().decode_json_web_token(access_token.split(" ")[1])
-    email_user = decoded_token['email']
-    data = request.json
-    nome_ponto = data.get('nome')
-    return favoritar_ponto_turistico_logica(nome_ponto,email_user)
+    email_user = adapter.adapter_token_email()
+    data = adapter.adapter_name_spot()
+    return favoritar_ponto_turistico_logica(data,email_user)
 
 @app.route("/users/seefavoritespot", methods=['GET'])
 @Token.token_required
 def ver_ponto_turistico_favorito():
-    access_token = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
-    decoded_token = auth.Token().decode_json_web_token(access_token.split(" ")[1])
-    email_user = decoded_token['email']
+    email_user = adapter.adapter_token_email()
     return ver_ponto_turistico_favoritado_logica(email_user)
 
 @app.route("/users/removefavoritespot", methods=['DELETE'])
 @Token.token_required
 def remover_ponto_favoritado():
-    access_token = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
-    decoded_token = auth.Token().decode_json_web_token(access_token.split(" ")[1])
-    email_user = decoded_token['email']
-    data = request.json
-    nome_ponto = data.get('nome')
-    return remover_ponto_favoritado_logica(nome_ponto,email_user)
+    email_user = adapter.adapter_token_email()
+    data = adapter.adapter_name_spot()
+    return remover_ponto_favoritado_logica(data,email_user)
 
 @app.route("/users/upvotespot", methods=['POST'])
 @Token.token_required
 def upvote_ponto():
-    access_token = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
-    decoded_token = auth.Token().decode_json_web_token(access_token.split(" ")[1])
-    email_user = decoded_token['email']
-    data = request.json
-    nome_ponto = data.get('nome')
-    return upvote_ponto_logica(nome_ponto,email_user)
+    email_user = adapter.adapter_token_email()
+    data = adapter.adapter_name_spot()
+    return upvote_ponto_logica(data,email_user)
 
 @app.route("/users/seetouristspotcreatedbyme", methods=['GET'])
 @Token.token_required
 def ver_pontos_criados_por_mim():
-    access_token = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
-    decoded_token = auth.Token().decode_json_web_token(access_token.split(" ")[1])
-    email_user = decoded_token['email']
-    data = request.json
+    email_user = adapter.adapter_token_email()
     return ver_pontos_criados_por_mim_logica(email_user)
 
 @app.route("/users/createnewcategorie", methods=['POST'])
 @Token.token_required
 def criar_nova_categoria():
-    data = request.json
-    nome_categoria = data.get('categoria')
-    return criar_nova_categoria_logica(nome_categoria)
+    data = adapter.adapter_category_spot()
+    return criar_nova_categoria_logica(data)
 
 
