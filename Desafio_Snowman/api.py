@@ -20,17 +20,13 @@ def inicial():
 
 @app.route("/users/login", methods=['GET'])
 def login():
-    data = request.json
-    email_usuario = data.get('email')
-    senha_usuario = data.get('senha')
-    return login_logica(email_usuario,senha_usuario)
+    data = adapter.adapter_user_datas()
+    return login_logica(*data)
 
 @app.route("/users/register", methods=['POST'])
 def register_user():
-    data = request.json
-    email_usuario = data.get('email')
-    senha_usuario = data.get('senha')
-    return registrar_usuario_logica(email_usuario,senha_usuario)
+    data = adapter.adapter_user_datas()
+    return login_logica(*data)
 
 @app.route("/users/seealltouristspot", methods=['GET'])
 def ver_todos_pontos():
