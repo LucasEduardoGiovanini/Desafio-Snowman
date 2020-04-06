@@ -33,29 +33,26 @@ def ver_todos_pontos():
 
 @app.route("/users/touristSpot5KM/", methods=['GET'])
 @auth.token_required
-def pontos_turisticos_5km():
-    email_user = adapter.adapter_token_email()
+def pontos_turisticos_5km(email_user):
+
     data = adapter.adapter_coordenates_spot()
     return pontos_turisticos_5km_logica(*data,email_user)
 
 @app.route("/users/touristSpotName", methods=['GET'])
 @auth.token_required
-def pontos_turisticos_por_nome():
-    email_user = adapter.adapter_token_email()
+def pontos_turisticos_por_nome(email_user):
     data = adapter.adapter_name_spot()
     return pontos_turisticos_por_nome_logica(data,email_user)
 
 @app.route("/users/registertouristspot", methods=['POST'])
 @auth.token_required
-def registrar_ponto_turistico():
-    email_user = adapter.adapter_token_email()
+def registrar_ponto_turistico(email_user):
     data = adapter.adapter_tourist_spot()
     return registrar_ponto_turistico_logica(*data,email_user)
 
 @app.route("/users/commenttouritspot", methods=['POST'])
 @auth.token_required
-def comentar_ponto_turistico():
-    email_user = adapter.adapter_token_email()
+def comentar_ponto_turistico(email_user):
     data = adapter.adapter_comment_spot()
     return comentar_ponto_turistico_logica(*data,email_user)
 
@@ -66,49 +63,42 @@ def ver_comentarios_pontos_turisticos():
 
 @app.route("/users/addpicturespot", methods=['POST'])
 @auth.token_required
-def adicionar_foto_ponto():
-    email_user = adapter.adapter_token_email()
+def adicionar_foto_ponto(email_user):
     data = adapter.adapter_picture_spot()
     return adicionar_foto_ponto_logica(*data,email_user)
 
 @app.route("/users/deletepicturespot", methods=['DELETE'])
 @auth.token_required
-def remover_foto_ponto():
-    email_user = adapter.adapter_token_email()
+def remover_foto_ponto(email_user):
     data=adapter.adapter_cod_picture_spot()
     return remover_foto_ponto_logica(data,email_user)
 
 @app.route("/users/favoriteaspot", methods=['POST'])
 @auth.token_required
-def favoritar_ponto_turistico():
-    email_user = adapter.adapter_token_email()
+def favoritar_ponto_turistico(email_user):
     data = adapter.adapter_name_spot()
     return favoritar_ponto_turistico_logica(data,email_user)
 
 @app.route("/users/seefavoritespot", methods=['GET'])
 @auth.token_required
-def ver_ponto_turistico_favorito():
-    email_user = adapter.adapter_token_email()
+def ver_ponto_turistico_favorito(email_user):
     return ver_ponto_turistico_favoritado_logica(email_user)
 
 @app.route("/users/removefavoritespot", methods=['DELETE'])
 @auth.token_required
-def remover_ponto_favoritado():
-    email_user = adapter.adapter_token_email()
+def remover_ponto_favoritado(email_user):
     data = adapter.adapter_name_spot()
     return remover_ponto_favoritado_logica(data,email_user)
 
 @app.route("/users/upvotespot", methods=['POST'])
 @auth.token_required
-def upvote_ponto():
-    email_user = adapter.adapter_token_email()
+def upvote_ponto(email_user):
     data = adapter.adapter_name_spot()
     return upvote_ponto_logica(data,email_user)
 
 @app.route("/users/seetouristspotcreatedbyme", methods=['GET'])
 @auth.token_required
-def ver_pontos_criados_por_mim():
-    email_user = adapter.adapter_token_email()
+def ver_pontos_criados_por_mim(email_user):
     return ver_pontos_criados_por_mim_logica(email_user)
 
 @app.route("/users/createnewcategorie", methods=['POST'])

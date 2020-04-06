@@ -44,7 +44,7 @@ def token_required(f):
         except:
             return jsonify({'message': 'invalid token'}), 403
 
-        return f(*args, **kwargs)
+        return f(*args,email_user, **kwargs)
 
     return decorated
 

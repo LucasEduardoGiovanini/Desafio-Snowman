@@ -15,12 +15,6 @@ def adapter_user_datas():
     senha_usuario = data.get('senha')
     return email_usuario,senha_usuario
 
-def adapter_token_email():
-    access_token = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
-    decoded_token = auth.decode_json_web_token(access_token.split(" ")[1])
-    email_user = decoded_token['email']
-    return email_user
-
 
 def adapter_coordenates_spot():
     data = request.json
