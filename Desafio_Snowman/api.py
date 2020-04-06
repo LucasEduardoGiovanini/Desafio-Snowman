@@ -3,7 +3,7 @@ from use_cases_turismo import *
 from functools import wraps
 import auth
 from auth import Token
-
+import adapter
 
 
 
@@ -64,14 +64,8 @@ def registrar_ponto_turistico():
     decoded_token = auth.Token().decode_json_web_token(access_token.split(" ")[1])
     email_user = decoded_token['email']
 
-    data = request.json
-
-    nome_ponto = data.get('nome')
-    latitude_ponto = data.get('latitude')
-    longitude_ponto = data.get('longitude')
-    categoria_ponto = data.get('categoria')
-    foto_ponto = data.get('foto')
-    return registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,foto_ponto,email_user)
+    data = adapter.adapter_tourist_spot()
+    return registrar_ponto_turistico_logica(*data,email_user)
 
 @app.route("/users/commenttouritspot", methods=['POST'])
 @Token.token_required
