@@ -19,13 +19,15 @@ def inicial():
 
 @app.route("/users/login", methods=['GET'])
 def login():
-    data = adapter.adapter_user_datas()
-    return login_logica(*data)
+    data = request.json
+    values = adapter.adapter_user_datas(data)
+    return login_logica(*values)
 
 @app.route("/users/register", methods=['POST'])
 def register_user():
-    data = adapter.adapter_user_datas()
-    return login_logica(*data)
+    data = request.json
+    values = adapter.adapter_user_datas(data)
+    return login_logica(*values)
 
 @app.route("/users/seealltouristspot", methods=['GET'])
 def ver_todos_pontos():
@@ -34,27 +36,30 @@ def ver_todos_pontos():
 @app.route("/users/touristSpot5KM/", methods=['GET'])
 @auth.token_required
 def pontos_turisticos_5km(email_user):
-
-    data = adapter.adapter_coordenates_spot()
-    return pontos_turisticos_5km_logica(*data,email_user)
+    data = request.json
+    values = adapter.adapter_coordenates_spot(data)
+    return pontos_turisticos_5km_logica(*values,email_user)
 
 @app.route("/users/touristSpotName", methods=['GET'])
 @auth.token_required
 def pontos_turisticos_por_nome(email_user):
-    data = adapter.adapter_name_spot()
-    return pontos_turisticos_por_nome_logica(data,email_user)
+    data = request.json
+    values = adapter.adapter_name_spot(data)
+    return pontos_turisticos_por_nome_logica(values,email_user)
 
 @app.route("/users/registertouristspot", methods=['POST'])
 @auth.token_required
 def registrar_ponto_turistico(email_user):
-    data = adapter.adapter_tourist_spot()
-    return registrar_ponto_turistico_logica(*data,email_user)
+    data = request.json
+    values = adapter.adapter_tourist_spot(data)
+    return registrar_ponto_turistico_logica(*values,email_user)
 
 @app.route("/users/commenttouritspot", methods=['POST'])
 @auth.token_required
 def comentar_ponto_turistico(email_user):
-    data = adapter.adapter_comment_spot()
-    return comentar_ponto_turistico_logica(*data,email_user)
+    data = request.json
+    values = adapter.adapter_comment_spot(data)
+    return comentar_ponto_turistico_logica(*values,email_user)
 
 @app.route("/users/seecommenttouritspot", methods=['GET'])
 def ver_comentarios_pontos_turisticos():
