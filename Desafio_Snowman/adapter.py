@@ -15,7 +15,6 @@ def adapter_user_datas(data):
 
 
 def adapter_coordenates_spot(data):
-
     latitude_usuario = data.get('lat')
     longitude_usuario = data.get('long')
     return latitude_usuario,longitude_usuario
@@ -29,18 +28,15 @@ def adapter_comment_spot(data):
     descricao_comentario = data.get('comentario')
     return nome_ponto,descricao_comentario
 
-def adapter_picture_spot():
-    data = request.json
+def adapter_picture_spot(data):
     nome_ponto = data.get('nome')
     foto_ponto = data.get('foto')
     return nome_ponto,foto_ponto
 
-def adapter_cod_picture_spot():
-    data = request.json
+def adapter_cod_picture_spot(data):
     cod_foto = data.get('cod_foto')
     return cod_foto
 
-def adapter_category_spot():
-    data = request.json
+def adapter_category_spot(data):
     nome_categoria = data.get('categoria')
     return nome_categoria

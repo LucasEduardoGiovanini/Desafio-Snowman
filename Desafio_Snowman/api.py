@@ -63,26 +63,30 @@ def comentar_ponto_turistico(email_user):
 
 @app.route("/users/seecommenttouritspot", methods=['GET'])
 def ver_comentarios_pontos_turisticos():
-    data = adapter.adapter_name_spot()
-    return ver_comentario_ponto_turistico_logica(data)
+    data = request.json
+    values = adapter.adapter_name_spot(data)
+    return ver_comentario_ponto_turistico_logica(values)
 
 @app.route("/users/addpicturespot", methods=['POST'])
 @auth.token_required
 def adicionar_foto_ponto(email_user):
-    data = adapter.adapter_picture_spot()
-    return adicionar_foto_ponto_logica(*data,email_user)
+    data = request.json
+    values = adapter.adapter_picture_spot(data)
+    return adicionar_foto_ponto_logica(*values,email_user)
 
 @app.route("/users/deletepicturespot", methods=['DELETE'])
 @auth.token_required
 def remover_foto_ponto(email_user):
-    data=adapter.adapter_cod_picture_spot()
-    return remover_foto_ponto_logica(data,email_user)
+    data = request.json
+    values = adapter.adapter_cod_picture_spot(data)
+    return remover_foto_ponto_logica(values,email_user)
 
 @app.route("/users/favoriteaspot", methods=['POST'])
 @auth.token_required
 def favoritar_ponto_turistico(email_user):
-    data = adapter.adapter_name_spot()
-    return favoritar_ponto_turistico_logica(data,email_user)
+    data = request.json
+    values = adapter.adapter_name_spot(data)
+    return favoritar_ponto_turistico_logica(values,email_user)
 
 @app.route("/users/seefavoritespot", methods=['GET'])
 @auth.token_required
@@ -92,14 +96,16 @@ def ver_ponto_turistico_favorito(email_user):
 @app.route("/users/removefavoritespot", methods=['DELETE'])
 @auth.token_required
 def remover_ponto_favoritado(email_user):
-    data = adapter.adapter_name_spot()
-    return remover_ponto_favoritado_logica(data,email_user)
+    data = request.json
+    values = adapter.adapter_name_spot(data)
+    return remover_ponto_favoritado_logica(values,email_user)
 
 @app.route("/users/upvotespot", methods=['POST'])
 @auth.token_required
 def upvote_ponto(email_user):
-    data = adapter.adapter_name_spot()
-    return upvote_ponto_logica(data,email_user)
+    data = request.json
+    values = adapter.adapter_name_spot(data)
+    return upvote_ponto_logica(values,email_user)
 
 @app.route("/users/seetouristspotcreatedbyme", methods=['GET'])
 @auth.token_required
@@ -109,7 +115,8 @@ def ver_pontos_criados_por_mim(email_user):
 @app.route("/users/createnewcategorie", methods=['POST'])
 @auth.token_required
 def criar_nova_categoria():
-    data = adapter.adapter_category_spot()
-    return criar_nova_categoria_logica(data)
+    data = request.json
+    values = adapter.adapter_category_spot(data)
+    return criar_nova_categoria_logica(values)
 
 
