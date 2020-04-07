@@ -31,7 +31,7 @@ def register_user():
 
 @app.route("/users/seealltouristspot", methods=['GET'])
 def ver_todos_pontos():
-    return ver_todos_pontos_logica()
+    return ver_todos_pontos_logica(presenters.points_presenter)
 
 @app.route("/users/touristSpot5KM/", methods=['GET'])
 @auth.token_required

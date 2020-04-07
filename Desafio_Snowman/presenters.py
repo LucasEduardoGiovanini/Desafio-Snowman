@@ -12,3 +12,9 @@ def user_login_presenter(success, token=None):
         return jsonify({'token':token})
     else:
         return jsonify({'messege': 'Acesso negado!'}), 401
+
+
+
+def points_presenter(points=None):
+     return jsonify({'aqui estão os pontos': points}), 200
+

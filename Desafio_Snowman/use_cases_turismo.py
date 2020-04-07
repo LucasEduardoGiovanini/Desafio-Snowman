@@ -80,11 +80,11 @@ def registrar_usuario_logica(email_usuario,senha_usuario,presenter) -> UserRegis
         return presenter(True,*registered.values()) #retorno todos os dados de registro desmembrados para a respectiva função do presenter .values retorna apenas os valores do json
 
 
-
-def ver_todos_pontos_logica():
+UserPointsResponse = Tuple['success', 'points'] #dicionário informativo sobre os dados que serão repassados
+def ver_todos_pontos_logica(presenter) -> UserPointsResponse:
     repository = PontoTuristicoRepository()
     all_points = repository.search_points()
-    return jsonify({'messege': 'aqui estão os pontos:','ponto(os)':all_points}), 200
+    return presenter(all_points)
 
 def pontos_turisticos_5km_logica(latitude_usuario,longitude_usuario,email_user):
     repository = PontoTuristicoRepository()
