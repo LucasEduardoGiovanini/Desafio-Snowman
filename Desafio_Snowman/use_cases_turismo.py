@@ -35,10 +35,6 @@ def escreve_imagem(data):
             q.write(imagem)
 
 
-def checar_usuario_existe(email_usuario):
-    repository = UserRepostory()
-    check_existance_of_user = repository.verify_email(email_usuario)
-    return True if check_existance_of_user == True else False
 
 
 def validar_email_senha_do_usuario(email_usuario,senha_usuario):
@@ -57,7 +53,6 @@ def login_logica(email_usuario,senha_usuario):
     authorization = validar_email_senha_do_usuario(email_usuario,senha_usuario)
     if authorization:
         repository = UserRepostory()
-
         user_token = auth.create_json_web_token(email_usuario)
         return jsonify({'token':auth.serializer_token(user_token)})
     else:
