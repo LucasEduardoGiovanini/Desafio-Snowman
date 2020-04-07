@@ -51,7 +51,7 @@ class PontoTuristicoRepository:
         arguments = (nome,)
         cursor.execute("INSERT INTO  tbCategorias (nome) VALUES(%s)",arguments) #insiro a categoria
         self.connection.commit()
-        cursor.execute("SELECT * FROM tbCategorias WHERE nome = %s",arguments)#busco o código da categoria para realizar operações futuras
+        cursor.execute("SELECT * FROM tbCategorias WHERE nome = %s",arguments)
         datas = cursor.fetchone()
         return datas
 
@@ -60,6 +60,9 @@ class PontoTuristicoRepository:
         arguments = (foto,nome,email)
         cursor.execute("INSERT INTO tbImagem_ponto(foto,nome,email) VALUES(%s,%s,%s)",arguments)
         self.connection.commit()
+        cursor.execute("SELECT * FROM tbImagem_ponto where foto= %s and nome= %s and email= %s",arguments)
+        datas = cursor.fetchone()
+        return datas
 
     def create_tourist_point_and_upvote(self, nome: str, categoria: int, latitude: float, longitude: float, criador_ponto: str):
         cursor = self.connection.cursor()
@@ -68,7 +71,9 @@ class PontoTuristicoRepository:
         self.connection.commit()
         arguments_upvote=(nome,)
         cursor.execute("INSERT INTO tbUpvote(nome,quantidade_upvote) VALUES (%s,0)", arguments_upvote)
-        datas = self.connection.commit()
+        self.connection.commit()
+        cursor.execute("SELECT * FROM tbPontoTuristico where nome=%s and categoria=%s and latitude=%s and longitude=%s and criador_ponto=%s", arguments_point)
+        datas = cursor.fetchone()
         return datas
 
     def check_who_favored_point(self,email:str,nome:str):
@@ -82,7 +87,9 @@ class PontoTuristicoRepository:
         cursor = self.connection.cursor()
         arguments = (email, nome, descricao)
         cursor.execute("INSERT INTO tbComentario (email,nome,descricao) VALUES (%s,%s,%s)",arguments)
-        datas = self.connection.commit()
+        self.connection.commit()
+        cursor.execute("SELECT * FROM tbComentario where email=%,nome=%,descricao=%s", arguments)
+        datas = cursor.fetchone()
         return datas
 
     def search_comments(self,nome:str):
@@ -114,7 +121,9 @@ class PontoTuristicoRepository:
         value_of_upvote = cursor.fetchone()
         new_arguments = (value_of_upvote['quantidade_upvote']+1,nome) #como quero incrementar um upvote, passo o resultado como +1 na tupla
         cursor.execute("UPDATE tbUpvote SET quantidade_upvote = %s WHERE nome = %s",new_arguments)
-        datas = self.connection.commit()
+        self.connection.commit()
+        cursor.execute("SELECT * FROM tbUpvote where nome=%s",arguments)
+        datas = cursor.fetchone()
         return datas
 
 
