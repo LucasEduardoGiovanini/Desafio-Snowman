@@ -5,48 +5,48 @@ from functools import wraps
 secret_key = os.urandom(16)
 import use_cases_turismo
 
-class Encrypt:
-    def encrypt_password(password:str):
-        byte_password = str.encode(password)
-        hashed = bcrypt.hashpw(byte_password, bcrypt.gensalt(10))
-        return hashed
 
-    def validate_user_password(self,normal_password:str,encrypted_password:str):
-        return True if bcrypt.checkpw(str.encode(normal_password),str.encode(encrypted_password)) else False
+def encrypt_password(password:str):
+    byte_password = str.encode(password)
+    hashed = bcrypt.hashpw(byte_password, bcrypt.gensalt(10))
+    return hashed
 
-class Token:
-    def create_json_web_token(self,email:str):
-        return jwt.encode({'email': email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)},secret_key)
+def validate_user_password(normal_password:str,encrypted_password:str):
+    return True if bcrypt.checkpw(str.encode(normal_password),str.encode(encrypted_password)) else False
 
 
-    def decode_json_web_token(self,token:str):
-        return jwt.decode(token,secret_key)
+def create_json_web_token(email:str):
+    return jwt.encode({'email': email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)},secret_key)
 
 
-    def serializer_token(self,token: bytes):
-        return token.decode('UTF-8')
+def decode_json_web_token(token:str):
+    return jwt.decode(token,secret_key)
 
-    def token_required(f):
-        @wraps(f)
-        def decorated(*args, **kwargs):
 
-            token_required = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
-            access_token = token_required.split(" ")[1]  # removo o bearer com o split
-            if not access_token:
-                return jsonify({'message': 'token is missing!'}), 401
+def serializer_token(token: bytes):
+    return token.decode('UTF-8')
 
-            try:
-                token = Token().decode_json_web_token(access_token)
-                email_user = token['email']
-                user_validate = use_cases_turismo.checar_usuario_existe(email_user)
-                if not user_validate:
-                    return jsonify({'message': 'o usuário não é mais válido!'}), 401
-            except:
-                return jsonify({'message': 'invalid token'}), 403
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
 
-            return f(*args, **kwargs)
+        token_required = request.headers.get("Authorization")  # chega o token com bearer precedendo ele
+        access_token = token_required.split(" ")[1]  # removo o bearer com o split
+        if not access_token:
+            return jsonify({'message': 'token is missing!'}), 401
 
-        return decorated
+        try:
+            token =decode_json_web_token(access_token)
+            email_user = token['email']
+            user_validate = use_cases_turismo.checar_usuario_existe(email_user)
+            if not user_validate:
+                return jsonify({'message': 'o usuário não é mais válido!'}), 401
+        except:
+            return jsonify({'message': 'invalid token'}), 403
+
+        return f(*args,email_user, **kwargs)
+
+    return decorated
 
 
 

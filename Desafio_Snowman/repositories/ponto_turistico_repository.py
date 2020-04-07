@@ -1,5 +1,4 @@
 import pymysql
-from flask import jsonify
 
 class PontoTuristicoRepository:
 
@@ -111,7 +110,6 @@ class PontoTuristicoRepository:
         cursor.execute("SELECT quantidade_upvote from tbUpvote where nome = %s",arguments)
         value_of_upvote = cursor.fetchone()
         new_arguments = (value_of_upvote['quantidade_upvote']+1,nome) #como quero incrementar um upvote, passo o resultado como +1 na tupla
-        print(new_arguments)
         cursor.execute("UPDATE tbUpvote SET quantidade_upvote = %s WHERE nome = %s",new_arguments)
         self.connection.commit()
         return True
