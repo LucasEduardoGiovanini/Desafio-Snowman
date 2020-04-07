@@ -63,12 +63,13 @@ class PontoTuristicoRepository:
 
     def create_tourist_point_and_upvote(self, nome: str, categoria: int, latitude: float, longitude: float, criador_ponto: str):
         cursor = self.connection.cursor()
-        arguments=(nome,categoria,latitude,longitude,criador_ponto)
-        cursor.execute("INSERT INTO tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) VALUES (%s,%s,%s,%s,%s)",arguments)
+        arguments_point=(nome,categoria,latitude,longitude,criador_ponto)
+        cursor.execute("INSERT INTO tbPontoTuristico(nome,categoria,latitude,longitude,criador_ponto) VALUES (%s,%s,%s,%s,%s)",arguments_point)
         self.connection.commit()
-        arguments=(nome,)
-        cursor.execute("INSERT INTO tbUpvote(nome,quantidade_upvote) VALUES (%s,0)", arguments)
-        self.connection.commit()
+        arguments_upvote=(nome,)
+        cursor.execute("INSERT INTO tbUpvote(nome,quantidade_upvote) VALUES (%s,0)", arguments_upvote)
+        datas = self.connection.commit()
+        return datas
 
     def check_who_favored_point(self,email:str,nome:str):
         cursor = self.connection.cursor();
@@ -81,7 +82,8 @@ class PontoTuristicoRepository:
         cursor = self.connection.cursor()
         arguments = (email, nome, descricao)
         cursor.execute("INSERT INTO tbComentario (email,nome,descricao) VALUES (%s,%s,%s)",arguments)
-        self.connection.commit()
+        datas = self.connection.commit()
+        return datas
 
     def search_comments(self,nome:str):
         cursor = self.connection.cursor()
@@ -94,8 +96,9 @@ class PontoTuristicoRepository:
         cursor = self.connection.cursor()
         arguments = (cod,email)
         cursor.execute("DELETE FROM tbImagem_ponto WHERE cod = %s and email=%s", arguments)
-        result = self.connection.commit()
-        print(result)
+        self.connection.commit()
+        return True
+
 
     def search_picture(self,cod:int):
         cursor = self.connection.cursor()
@@ -111,8 +114,8 @@ class PontoTuristicoRepository:
         value_of_upvote = cursor.fetchone()
         new_arguments = (value_of_upvote['quantidade_upvote']+1,nome) #como quero incrementar um upvote, passo o resultado como +1 na tupla
         cursor.execute("UPDATE tbUpvote SET quantidade_upvote = %s WHERE nome = %s",new_arguments)
-        self.connection.commit()
-        return True
+        datas = self.connection.commit()
+        return datas
 
 
 

@@ -28,8 +28,8 @@ class UserRepostory:
         cursor=self.connection.cursor()
         arguments = (email, password)
         cursor.execute("INSERT INTO tbUsuario (email,senha) VALUES(%s,%s)", arguments)
-        self.connection.commit()
-        return arguments
+        datas = self.connection.commit()
+        return datas
 
     def select_all_favored_spots_from_user(self,email:str):
         cursor = self.connection.cursor()
