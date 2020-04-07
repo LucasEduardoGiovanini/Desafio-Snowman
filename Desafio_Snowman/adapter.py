@@ -1,5 +1,4 @@
-from flask import request
-import auth
+
 def adapter_tourist_spot(data):
     nome_ponto = data.get('nome')
     latitude_ponto = data.get('latitude')
