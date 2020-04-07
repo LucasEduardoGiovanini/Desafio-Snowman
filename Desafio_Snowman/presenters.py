@@ -5,3 +5,10 @@ def user_registration_presenter(success,user_email=None):
         return jsonify({'messege': 'O usuário já existe'}), 403
     else:
         return jsonify({'user_email': user_email}), 201
+
+
+def user_login_presenter(success, token=None):
+    if success:
+        return jsonify({'token':token})
+    else:
+        return jsonify({'messege': 'Acesso negado!'}), 401

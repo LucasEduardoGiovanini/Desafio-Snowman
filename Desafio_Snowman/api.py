@@ -22,7 +22,7 @@ def inicial():
 def login():
     data = request.json
     values = adapter.adapter_user_datas(data)
-    return login_logica(*values)
+    return login_logica(*values,presenters.user_login_presenter)
 
 @app.route("/users/register", methods=['POST'])
 def register_user():

@@ -52,16 +52,16 @@ def validar_email_senha_do_usuario(email_usuario,senha_usuario):
 
     return False
 
-
-def login_logica(email_usuario,senha_usuario):
+UserLoginResponse = Tuple['success', 'user_email']
+def login_logica(email_usuario,senha_usuario,presenter) -> UserLoginResponse:
     authorization = validar_email_senha_do_usuario(email_usuario,senha_usuario)
     if authorization:
         repository = UserRepostory()
 
         user_token = auth.create_json_web_token(email_usuario)
-        return jsonify({'token':auth.serializer_token(user_token)})
+        return presenter(True,auth.serializer_token(user_token))
     else:
-        return jsonify({'messege': 'Acesso negado!'}), 401
+        return presenter(False)
 
 
 
