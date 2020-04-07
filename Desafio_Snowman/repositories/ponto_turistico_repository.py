@@ -1,5 +1,4 @@
 import pymysql
-from flask import jsonify
 
 class PontoTuristicoRepository:
 
