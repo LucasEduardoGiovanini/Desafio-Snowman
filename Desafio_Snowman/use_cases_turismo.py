@@ -35,6 +35,10 @@ def escreve_imagem(data):
             q.write(imagem)
 
 
+def checar_usuario_existe(email_usuario):
+    repository = UserRepostory()
+    check_existance_of_user = repository.verify_email(email_usuario)
+    return True if check_existance_of_user == True else False
 
 
 def validar_email_senha_do_usuario(email_usuario,senha_usuario):
