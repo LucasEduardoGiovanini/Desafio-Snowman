@@ -51,9 +51,9 @@ class PontoTuristicoRepository:
         arguments = (nome,)
         cursor.execute("INSERT INTO  tbCategorias (nome) VALUES(%s)",arguments) #insiro a categoria
         self.connection.commit()
-        cursor.execute("SELECT cod FROM tbCategorias WHERE nome = %s",arguments)#busco o código da categoria para realizar operações futuras
-        cod_category = cursor.fetchone()
-        return cod_category
+        cursor.execute("SELECT * FROM tbCategorias WHERE nome = %s",arguments)#busco o código da categoria para realizar operações futuras
+        datas = cursor.fetchone()
+        return datas
 
     def add_picture_spot(self,foto: str,nome: str, email:str):
         cursor = self.connection.cursor()

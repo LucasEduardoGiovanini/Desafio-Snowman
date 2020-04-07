@@ -120,7 +120,7 @@ def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,c
         category_exist = repository.check_existence_of_category(categoria_ponto)
 
         if not category_exist : #nesse caso eu preciso manter a verificação de booleano, pois preciso obter o falso primeiro, para saber se devo criar essa categoria antes de passar par a proxima condição
-            cod_category = repository.create_category(categoria_ponto)
+            datas_category = repository.create_category(categoria_ponto)
             category_exist = repository.check_existence_of_category(categoria_ponto) #solicito novamente a verificação da categoria, para que possa entrar no elif abaixo
             print(category_exist)
             jsonify({'Mensagem': 'categoria criada com sucesso!'})
