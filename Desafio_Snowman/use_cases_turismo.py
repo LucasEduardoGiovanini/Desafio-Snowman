@@ -8,6 +8,8 @@ import random
 from repositories import PontoTuristicoRepository,UserRepostory
 from http import HTTPStatus
 import auth
+from typing import Tuple
+
 
 
 
@@ -62,17 +64,20 @@ def login_logica(email_usuario,senha_usuario):
         return jsonify({'messege': 'Acesso negado!'}), 401
 
 
-def registrar_usuario_logica(email_usuario,senha_usuario):
+
+UserRegistrationResponse = Tuple['success', 'user_email'] #dicionário informativo sobre os dados que serão repassados
+def registrar_usuario_logica(email_usuario,senha_usuario,presenter) -> UserRegistrationResponse: #indico o tipo de retorno que essa função vai ter
     encrypted_password = auth.encrypt_password(senha_usuario)
     repository = UserRepostory()
 
     user_already_registered = repository.get_encrypt_password(email_usuario)
 
     if user_already_registered:
-        return jsonify({'messege': 'O usuário já existe'}), 403
+
+        return presenter(False)
     else:
         registered = repository.insert_user(email_usuario, encrypted_password)
-        return jsonify({'messege': 'Usuário cadastrado com sucesso'}), 200
+        return presenter(True,*registered.values()) #retorno todos os dados de registro desmembrados para a respectiva função do presenter .values retorna apenas os valores do json
 
 
 

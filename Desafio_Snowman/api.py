@@ -3,6 +3,7 @@ from use_cases_turismo import *
 from functools import wraps
 import auth
 import adapter
+import presenters
 
 
 
@@ -26,7 +27,7 @@ def login():
 @app.route("/users/register", methods=['POST'])
 def register_user():
     data = request.json
-    return login_logica(*adapter.adapter_user_datas(data))
+    return registrar_usuario_logica(*adapter.adapter_user_datas(data),presenters.user_registration_presenter)
 
 @app.route("/users/seealltouristspot", methods=['GET'])
 def ver_todos_pontos():
