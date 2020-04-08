@@ -115,8 +115,8 @@ def registrar_ponto_turistico_com_categoria(nome_ponto,latitude_ponto,longitude_
     create_new_category_if_not_exist(categoria_ponto,presenter_category)
     return registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter_point)
 
-
-def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter):
+PointCreationResponse = Tuple['Success','nome','laitutde','longitude','categoria','criador']
+def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter)->PointCreationResponse:
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if not point_exists:
@@ -130,9 +130,6 @@ def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,c
 
 
 def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuario):
-    nome_ponto = data.get('nome')
-    descricao_comentario = data.get('comentario')
-
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if point_exists :
@@ -246,8 +243,8 @@ def ver_pontos_criados_por_mim_logica(email_usuario):
         return jsonify({'messege': 'parece que você não cadastrou nenhum ponto!'}), 200
 
 
-
-def create_new_category_if_not_exist(nome_categoria,presenter):
+CategoryCreationResponse = Tuple['Success','cod','nome_categoria']
+def create_new_category_if_not_exist(nome_categoria,presenter)->CategoryCreationResponse:
     nome_categoria=nome_categoria.lower().capitalize()
     repository = PontoTuristicoRepository()
     category_exist=repository.check_existence_of_category(nome_categoria)
