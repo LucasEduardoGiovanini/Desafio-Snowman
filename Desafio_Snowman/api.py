@@ -62,7 +62,7 @@ def comentar_ponto_turistico(email_user):
 @app.route("/users/seecommenttouritspot", methods=['GET'])
 def ver_comentarios_pontos_turisticos():
     data = request.json
-    return ver_comentario_ponto_turistico_logica(adapter.adapter_name_spot(data))
+    return ver_comentario_ponto_turistico_logica(adapter.adapter_name_spot(data),presenters.points_presenter,presenters.commentary_visualization_presenter)
 
 @app.route("/users/addpicturespot", methods=['POST'])
 @auth.token_required

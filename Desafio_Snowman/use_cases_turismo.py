@@ -80,13 +80,13 @@ def registrar_usuario_logica(email_usuario,senha_usuario,presenter) -> UserRegis
         return presenter(True,*registered.values()) #retorno todos os dados de registro desmembrados para a respectiva função do presenter .values retorna apenas os valores do json
 
 
-AllPointsResponse = Tuple['list_points']
+AllPointsResponse = Tuple['success','list_points']
 def ver_todos_pontos_logica(presenter) -> AllPointsResponse:
     repository = PontoTuristicoRepository()
     all_points = repository.search_points()
-    return presenter(all_points)
+    return presenter(True,all_points)
 
-Points5kmResponse = Tuple['list_points']
+Points5kmResponse = Tuple['success','list_points']
 def pontos_turisticos_5km_logica(latitude_usuario,longitude_usuario,email_user,presenter) ->Points5kmResponse:
     repository = PontoTuristicoRepository()
     resultado = repository.search_points()
@@ -99,7 +99,7 @@ def pontos_turisticos_5km_logica(latitude_usuario,longitude_usuario,email_user,p
     if not dado:
         return presenter(False)
     else:
-        return presenter(dado)
+        return presenter(True,dado)
 
 SearchPointResponse = Tuple['Success','point']
 def pontos_turisticos_por_nome_logica(ponto,email_usuario,presenter)->SearchPointResponse:
@@ -138,22 +138,23 @@ def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuari
     else:
         return presenter(False)
 
-def ver_comentario_ponto_turistico_logica(nome_ponto):
+CommentVisualizationResponse=['succes','lista_comentarios']
+def ver_comentario_ponto_turistico_logica(nome_ponto,presenter_point,presenter_comment) ->CommentVisualizationResponse:
 
     repository = PontoTuristicoRepository()
     point_exist = repository.check_existence_of_the_point(nome_ponto)
-    print(point_exist)
+
     if point_exist:
         comments = repository.search_comments(nome_ponto)
         if not comments:
-            return jsonify({'message': 'parece que esse ponto ainda não possui comentários'}), 200
+            return presenter_comment(False)
         else:
             list_comments=list() #os comentários serão inseridos na lista para que retorne com um formato adequado.
             for comment in comments:
                 list_comments.append(comment['descricao'])
-            return jsonify({'comentário(s)\n':list_comments}), 200
+            return presenter_comment(True,list_comments)
     else:
-        return jsonify({'message': 'o ponto informado não existe.'}), 404
+        return presenter_point(False)
 
 
 def adicionar_foto_ponto_logica(data,email_usuario):

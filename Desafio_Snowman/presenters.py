@@ -15,8 +15,8 @@ def user_login_presenter(success, token=None):
 
 
 
-def points_presenter(points=None):
-    if points!=None:
+def points_presenter(success,points=None):
+    if success:
         return jsonify({'aqui estão os pontos:': points}), 200
     else:
         return jsonify({'nenhum ponto encontrado.':''}),200
@@ -39,8 +39,8 @@ def category_registration_presenter(success,cod = None,nome=None):
     else:
         return jsonify({'messege': 'A categoria já eixste.'}), 403
 
-def commentary_registration_presenter(success,email=None,nome_ponto=None,descricao=None):
+def commentary_visualization_presenter(success,list_comments=None):
     if success:
-        return jsonify({'criador: ': email, 'nome: ': nome_ponto,'descricao :':descricao}), 201
+        return jsonify({'comentário(s)\n':list_comments}), 200
     else:
-        return jsonify({'message': 'o ponto informado não existe.'}), 404
+        return jsonify({'message': 'parece que esse ponto ainda não possui comentários'}), 200
