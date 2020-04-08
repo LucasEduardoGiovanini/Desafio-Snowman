@@ -111,32 +111,22 @@ def pontos_turisticos_por_nome_logica(ponto,email_usuario,presenter)->SearchPoin
         return presenter(True,ponto)
 
 
-def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,foto_ponto,email_usuario):
+def registrar_ponto_turistico_com_categoria(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter_point,presenter_category):
+    create_new_category_if_not_exist(categoria_ponto,presenter_category)
+    return registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter_point)
 
-    decode_picture = base64.b64decode(foto_ponto)
 
-    categoria_ponto = categoria_ponto.lower().capitalize()
-
+def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter):
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
-    if point_exists:
-        return jsonify({'message': 'esse ponto já foi cadastrado!'}), 403
+    if not point_exists:
+        categoria_ponto = categoria_ponto.lower().capitalize()
+        codigo_categoria = repository.check_existence_of_category(categoria_ponto)
+        extract_cod_category = int(codigo_categoria['cod'])
+        point_created=repository.create_tourist_point_and_upvote(nome_ponto, extract_cod_category, latitude_ponto, longitude_ponto, email_usuario)
+        return presenter(True,*point_created.values())
     else:
-        category_exist = repository.check_existence_of_category(categoria_ponto)
-
-        if not category_exist : #nesse caso eu preciso manter a verificação de booleano, pois preciso obter o falso primeiro, para saber se devo criar essa categoria antes de passar par a proxima condição
-            datas_category = repository.create_category(categoria_ponto)
-            category_exist = repository.check_existence_of_category(categoria_ponto) #solicito novamente a verificação da categoria, para que possa entrar no elif abaixo
-            print(category_exist)
-            jsonify({'Mensagem': 'categoria criada com sucesso!'})
-
-        if category_exist:
-             extract_cod_category = int(category_exist['cod'])
-             repository.create_tourist_point_and_upvote(nome_ponto, extract_cod_category, latitude_ponto, longitude_ponto, email_usuario)
-
-             if foto_ponto:
-                repository.add_picture_spot(foto_ponto,nome_ponto,email_usuario)
-        return jsonify({'messege': 'ponto cadastrado com sucesso!'}), 200
+        return presenter(False)
 
 
 def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuario):
@@ -257,18 +247,16 @@ def ver_pontos_criados_por_mim_logica(email_usuario):
 
 
 
-
-def criar_nova_categoria_logica(nome_categoria):
+def create_new_category_if_not_exist(nome_categoria,presenter):
     nome_categoria=nome_categoria.lower().capitalize()
-
     repository = PontoTuristicoRepository()
     category_exist=repository.check_existence_of_category(nome_categoria)
 
     if  category_exist:
-        return jsonify({'messege': 'essa categoria já existe.'}), 403
+        return presenter(False)
     else:
-        repository.create_category(nome_categoria)
-        return jsonify({'messege': 'categoria criada com sucesso!'}), 200
+        new_category = repository.create_category(nome_categoria)
+        return presenter(True,*new_category.values())
 
 
 

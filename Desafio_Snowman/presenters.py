@@ -26,3 +26,15 @@ def  one_point_presenter(success,point=None):
         return jsonify({'ponto:':point}),200
     else:
         return jsonify({'messege': 'O ponto informado não foi localizado'}), 404
+
+def point_registration_presenter(success,nome_ponto=None,categoria_ponto=None,latitude_ponto=None,longitude_ponto=None,email_usuario=None):
+    if success:
+        return jsonify({'nome: ': nome_ponto,'categoria: ': categoria_ponto,'latitude: ': latitude_ponto,'longitude: ':longitude_ponto,'criador: ':email_usuario}), 201
+    else:
+        return jsonify({'messege': 'O ponto já  existe.'}), 403
+
+def category_registration_presenter(success,cod = None,nome=None):
+    if success:
+        return jsonify({'código: ': cod,'nome: ': nome}), 201
+    else:
+        return jsonify({'messege': 'A categoria já eixste.'}), 403
