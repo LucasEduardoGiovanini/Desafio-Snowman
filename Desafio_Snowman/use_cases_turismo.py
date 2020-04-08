@@ -80,29 +80,30 @@ def registrar_usuario_logica(email_usuario,senha_usuario,presenter) -> UserRegis
         return presenter(True,*registered.values()) #retorno todos os dados de registro desmembrados para a respectiva função do presenter .values retorna apenas os valores do json
 
 
-UserPointsResponse = Tuple['success', 'points'] #dicionário informativo sobre os dados que serão repassados
+UserPointsResponse = Tuple['success', 'list_points']
 def ver_todos_pontos_logica(presenter) -> UserPointsResponse:
     repository = PontoTuristicoRepository()
     all_points = repository.search_points()
     return presenter(all_points)
 
-def pontos_turisticos_5km_logica(latitude_usuario,longitude_usuario,email_user):
+Points5kmResponse = Tuple['success', 'list_points']
+def pontos_turisticos_5km_logica(latitude_usuario,longitude_usuario,email_user,presenter) ->Points5kmResponse:
     repository = PontoTuristicoRepository()
-    points = repository.search_points()
-    resultado = points
+    resultado = repository.search_points()
     dado = list()
-    for x in resultado:  #como temos varios pontos, preciso percorrer todos, pegar seus dados e compara-los utilizando a formula
-        distancia_km = haversine(float(longitude_usuario), float(latitude_usuario), float(x['longitude']), float(x['latitude']))     # aplico a latitude e longitude dos dois pontos na formula de haversine para obter a distancia em km
+    for ponto in resultado:
+        distancia_km = haversine(float(longitude_usuario), float(latitude_usuario), float(ponto['longitude']), float(ponto['latitude']))     # aplico a latitude e longitude dos dois pontos na formula de haversine para obter a distancia em km
         if (distancia_km <= 5):
-            x['distancia em Km'] = round(distancia_km, 2)
-            dado.append(x)
+            ponto['distancia em Km'] = round(distancia_km, 2)
+            dado.append(ponto)
     if not dado:
-        return jsonify({'resultado': 'nenhum ponto foi encontrado'}), 404
+        return presenter(False)
     else:
-        return jsonify({'resultado ': dado}), 200  # status code http
+        return presenter(dado)
 
 
 def pontos_turisticos_por_nome_logica(ponto,email_usuario):
+
     repository = PontoTuristicoRepository()
     ponto = repository.get_ponto_turistico_by_name(ponto)
     if not ponto:

@@ -38,7 +38,7 @@ def ver_todos_pontos():
 def pontos_turisticos_5km(email_user):
     data = request.json
 
-    return pontos_turisticos_5km_logica(adapter.adapter_coordenates_spot(data),email_user)
+    return pontos_turisticos_5km_logica(*adapter.adapter_coordenates_spot(data),email_user,presenters.points_presenter)
 
 @app.route("/users/touristSpotName", methods=['GET'])
 @auth.token_required

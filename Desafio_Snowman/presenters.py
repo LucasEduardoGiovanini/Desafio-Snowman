@@ -16,5 +16,8 @@ def user_login_presenter(success, token=None):
 
 
 def points_presenter(points=None):
-     return jsonify({'aqui estão os pontos': points}), 200
+    if points!=None:
+        return jsonify({'aqui estão os pontos:': points}), 200
+    else:
+        return jsonify({'nenhum ponto encontrado.':''}),200
 
