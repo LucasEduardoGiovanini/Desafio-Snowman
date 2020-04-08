@@ -158,8 +158,8 @@ def ver_comentario_ponto_turistico_logica(nome_ponto,presenter_point,presenter_c
 
 
 
-
-def favoritar_ponto_turistico_logica(nome_ponto,email_usuario):
+FavoredSpotResponse=['succes','nome_ponto','email_usuario']
+def favoritar_ponto_turistico_logica(nome_ponto,email_usuario,presenter_favored,presenter_point)->FavoredSpotResponse:
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if  point_exists :
@@ -167,13 +167,13 @@ def favoritar_ponto_turistico_logica(nome_ponto,email_usuario):
         points = repository.search_favorited_spots(email_usuario)
         for ponto in points:
             if ponto['nome'] == nome_ponto:
-                return jsonify({'messege': 'o ponto já está favoritado'}), 403
+                return presenter_favored(False)
 
         result = repository.favorite_tourist_spot(email_usuario, nome_ponto)
         if result:
-            return jsonify({'messege': 'ponto favoritado com sucesso!'}), 200
+            return presenter_favored(True,*result.values())
     else:
-        return jsonify({'messege': 'o ponto informado não existe!'}), 404
+        return presenter_point(False)
 
 
 

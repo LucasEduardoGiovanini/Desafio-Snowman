@@ -68,7 +68,7 @@ def ver_comentarios_pontos_turisticos():
 @auth.token_required
 def favoritar_ponto_turistico(email_user):
     data = request.json
-    return favoritar_ponto_turistico_logica(adapter.adapter_name_spot(data),email_user)
+    return favoritar_ponto_turistico_logica(adapter.adapter_name_spot(data),email_user,presenters.favored_spot_presenter,presenters.points_presenter)
 
 @app.route("/users/seefavoritespot", methods=['GET'])
 @auth.token_required

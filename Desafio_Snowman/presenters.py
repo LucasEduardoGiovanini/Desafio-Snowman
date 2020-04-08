@@ -44,3 +44,11 @@ def commentary_visualization_presenter(success,list_comments=None):
         return jsonify({'comentário(s)\n':list_comments}), 200
     else:
         return jsonify({'message': 'parece que esse ponto ainda não possui comentários'}), 200
+
+def favored_spot_presenter(success,nome_ponto=None,email_usuario=None):
+    if success:
+        return jsonify({'ponto:': nome_ponto,'criador: ':email_usuario}), 201
+    else:
+        return jsonify({'messege': 'o ponto já está favoritado'}), 403
+
+
