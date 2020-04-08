@@ -21,3 +21,8 @@ def points_presenter(points=None):
     else:
         return jsonify({'nenhum ponto encontrado.':''}),200
 
+def  one_point_presenter(success,point=None):
+    if success:
+        return jsonify({'ponto:':point}),200
+    else:
+        return jsonify({'messege': 'O ponto informado não foi localizado'}), 404

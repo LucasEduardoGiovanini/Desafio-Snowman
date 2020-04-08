@@ -80,13 +80,13 @@ def registrar_usuario_logica(email_usuario,senha_usuario,presenter) -> UserRegis
         return presenter(True,*registered.values()) #retorno todos os dados de registro desmembrados para a respectiva função do presenter .values retorna apenas os valores do json
 
 
-UserPointsResponse = Tuple['success', 'list_points']
-def ver_todos_pontos_logica(presenter) -> UserPointsResponse:
+AllPointsResponse = Tuple['list_points']
+def ver_todos_pontos_logica(presenter) -> AllPointsResponse:
     repository = PontoTuristicoRepository()
     all_points = repository.search_points()
     return presenter(all_points)
 
-Points5kmResponse = Tuple['success', 'list_points']
+Points5kmResponse = Tuple['list_points']
 def pontos_turisticos_5km_logica(latitude_usuario,longitude_usuario,email_user,presenter) ->Points5kmResponse:
     repository = PontoTuristicoRepository()
     resultado = repository.search_points()
@@ -101,15 +101,14 @@ def pontos_turisticos_5km_logica(latitude_usuario,longitude_usuario,email_user,p
     else:
         return presenter(dado)
 
-
-def pontos_turisticos_por_nome_logica(ponto,email_usuario):
-
+SearchPointResponse = Tuple['Success','point']
+def pontos_turisticos_por_nome_logica(ponto,email_usuario,presenter)->SearchPointResponse:
     repository = PontoTuristicoRepository()
     ponto = repository.get_ponto_turistico_by_name(ponto)
     if not ponto:
-        return jsonify({'message':'O ponto informado não existe'}),404
+        return presenter(False)
     else:
-        return jsonify({'Pontos':ponto}), 200
+        return presenter(True,ponto)
 
 
 def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,foto_ponto,email_usuario):

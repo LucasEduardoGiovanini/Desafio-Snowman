@@ -44,7 +44,7 @@ def pontos_turisticos_5km(email_user):
 @auth.token_required
 def pontos_turisticos_por_nome(email_user):
     data = request.json
-    return pontos_turisticos_por_nome_logica(adapter.adapter_name_spot(data),email_user)
+    return pontos_turisticos_por_nome_logica(adapter.adapter_name_spot(data),email_user,presenters.one_point_presenter)
 
 @app.route("/users/registertouristspot", methods=['POST'])
 @auth.token_required
