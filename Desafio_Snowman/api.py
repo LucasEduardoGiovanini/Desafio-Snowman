@@ -64,18 +64,6 @@ def ver_comentarios_pontos_turisticos():
     data = request.json
     return ver_comentario_ponto_turistico_logica(adapter.adapter_name_spot(data),presenters.points_presenter,presenters.commentary_visualization_presenter)
 
-@app.route("/users/addpicturespot", methods=['POST'])
-@auth.token_required
-def adicionar_foto_ponto(email_user):
-    data = request.json
-    return adicionar_foto_ponto_logica(*adapter.adapter_picture_spot(data),email_user)
-
-@app.route("/users/deletepicturespot", methods=['DELETE'])
-@auth.token_required
-def remover_foto_ponto(email_user):
-    data = request.json
-    return remover_foto_ponto_logica(adapter.adapter_cod_picture_spot(data),email_user)
-
 @app.route("/users/favoriteaspot", methods=['POST'])
 @auth.token_required
 def favoritar_ponto_turistico(email_user):

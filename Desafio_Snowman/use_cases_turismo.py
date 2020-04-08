@@ -157,27 +157,6 @@ def ver_comentario_ponto_turistico_logica(nome_ponto,presenter_point,presenter_c
         return presenter_point(False)
 
 
-def adicionar_foto_ponto_logica(data,email_usuario):
-    decode_picture = base64.b64decode(foto_ponto)
-    repository = PontoTuristicoRepository()
-    point_exists = repository.check_existence_of_the_point(nome_ponto)
-    if point_exists :
-        repository.add_picture_spot(foto_ponto, nome_ponto, email_usuario)
-        return jsonify({'messege': 'foto cadastrada com sucesso!'}), 200
-    else:
-        return jsonify({'messege': 'o ponto informado não existe!'}), 403
-
-
-
-
-def remover_foto_ponto_logica(data,email_usuario):
-    repository = PontoTuristicoRepository()
-    photo_exist = repository.search_picture(cod_foto)
-    if photo_exist :
-        photo_deleted = repository.delete_picture(cod_foto,email_usuario)
-        return jsonify({'messege': 'foto apagada com sucesso'}), 200
-    else:
-        return jsonify({'messege': 'foto não encontrada'}), 404
 
 
 def favoritar_ponto_turistico_logica(nome_ponto,email_usuario):
