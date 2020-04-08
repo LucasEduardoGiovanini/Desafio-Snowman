@@ -84,11 +84,12 @@ class PontoTuristicoRepository:
         return result
 
     def create_comment_about_point(self, email:str, nome:str, descricao: str):
+
         cursor = self.connection.cursor()
         arguments = (email, nome, descricao)
         cursor.execute("INSERT INTO tbComentario (email,nome,descricao) VALUES (%s,%s,%s)",arguments)
         self.connection.commit()
-        cursor.execute("SELECT * FROM tbComentario where email=%,nome=%,descricao=%s", arguments)
+        cursor.execute("SELECT * FROM tbComentario where email=%s and nome=%s and descricao=%s", arguments)
         datas = cursor.fetchone()
         return datas
 

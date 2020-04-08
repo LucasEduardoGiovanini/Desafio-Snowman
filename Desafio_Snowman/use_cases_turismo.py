@@ -128,15 +128,15 @@ def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,c
     else:
         return presenter(False)
 
-
-def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuario):
+CommentCreationResponse = ['criador','nome_ponto','descricao']
+def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuario,presenter)->CommentCreationResponse:
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if point_exists :
-        repository.create_comment_about_point(email_usuario, nome_ponto, descricao_comentario)
-        return jsonify({'message': 'comentário cadastrado com sucesso!'}), 200
+        comment = repository.create_comment_about_point(email_usuario, nome_ponto, descricao_comentario)
+        return presenter(True,*comment.values())
     else:
-        return jsonify({'message': 'o ponto informado não existe.'}), 404
+        return presenter(False)
 
 def ver_comentario_ponto_turistico_logica(nome_ponto):
 

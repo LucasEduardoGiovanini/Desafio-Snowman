@@ -57,7 +57,7 @@ def registrar_ponto_turistico(email_user):
 def comentar_ponto_turistico(email_user):
     data = request.json
 
-    return comentar_ponto_turistico_logica(*adapter.adapter_comment_spot(data),email_user)
+    return comentar_ponto_turistico_logica(*adapter.adapter_comment_spot(data),email_user,presenters.commentary_registration_presenter)
 
 @app.route("/users/seecommenttouritspot", methods=['GET'])
 def ver_comentarios_pontos_turisticos():

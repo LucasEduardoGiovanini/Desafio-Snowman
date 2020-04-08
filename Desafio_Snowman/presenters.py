@@ -38,3 +38,9 @@ def category_registration_presenter(success,cod = None,nome=None):
         return jsonify({'código: ': cod,'nome: ': nome}), 201
     else:
         return jsonify({'messege': 'A categoria já eixste.'}), 403
+
+def commentary_registration_presenter(success,email=None,nome_ponto=None,descricao=None):
+    if success:
+        return jsonify({'criador: ': email, 'nome: ': nome_ponto,'descricao :':descricao}), 201
+    else:
+        return jsonify({'message': 'o ponto informado não existe.'}), 404
