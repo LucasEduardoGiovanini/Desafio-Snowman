@@ -177,28 +177,27 @@ def favoritar_ponto_turistico_logica(nome_ponto,email_usuario,presenter_favored,
 
 
 
-
-def ver_ponto_turistico_favoritado_logica(email_usuario):
+SeeFavoredResponse = ['success','list_points']
+def ver_ponto_turistico_favoritado_logica(email_usuario,presenter) ->SeeFavoredResponse:
     repository = UserRepostory()
     points_favoriteds = repository.search_favorited_spots(email_usuario)
     if points_favoriteds:
-        return jsonify({'Mensagem': 'sucesso! aqui estão seus pontos!', "ponto": points_favoriteds}), 200
+        return presenter(True,points_favoriteds)
     else:
-        return jsonify({'messege': 'o ponto informado não existe!'}), 404
+        return presenter(False)
 
 
 
-
-def remover_ponto_favoritado_logica(nome_ponto,email_usuario):
+RemoveFavoredResponse=['success']
+def remover_ponto_favoritado_logica(nome_ponto,email_usuario,presenter)->RemoveFavoredResponse:
     repository=PontoTuristicoRepository()
     user_favored_this_point = repository.check_who_favored_point(email_usuario,nome_ponto)
     if  user_favored_this_point :
         repository = UserRepostory()
         repository.remove_favorited_tourist_spot(email_usuario, nome_ponto)
-        return jsonify({'messege': 'ponto removido!'}), 200
+        return presenter(True)
     else:
-        return jsonify({'messege': 'o ponto não foi localizado'}), 404
-
+        return presenter(False)
 
 
 

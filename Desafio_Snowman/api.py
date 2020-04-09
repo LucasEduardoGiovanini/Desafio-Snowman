@@ -73,13 +73,13 @@ def favoritar_ponto_turistico(email_user):
 @app.route("/users/seefavoritespot", methods=['GET'])
 @auth.token_required
 def ver_ponto_turistico_favorito(email_user):
-    return ver_ponto_turistico_favoritado_logica(email_user)
+    return ver_ponto_turistico_favoritado_logica(email_user,presenters.see_favored_spot_presenter)
 
 @app.route("/users/removefavoritespot", methods=['DELETE'])
 @auth.token_required
 def remover_ponto_favoritado(email_user):
     data = request.json
-    return remover_ponto_favoritado_logica(adapter.adapter_name_spot(data),email_user)
+    return remover_ponto_favoritado_logica(adapter.adapter_name_spot(data),email_user,presenters.remove_favored_spot_presenter)
 
 @app.route("/users/upvotespot", methods=['POST'])
 @auth.token_required

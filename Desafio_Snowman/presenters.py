@@ -14,7 +14,6 @@ def user_login_presenter(success, token=None):
         return jsonify({'messege': 'Acesso negado!'}), 401
 
 
-
 def points_presenter(success,points=None):
     if success:
         return jsonify({'aqui estão os pontos:': points}), 200
@@ -51,4 +50,13 @@ def favored_spot_presenter(success,nome_ponto=None,email_usuario=None):
     else:
         return jsonify({'messege': 'o ponto já está favoritado'}), 403
 
-
+def see_favored_spot_presenter(success,pontos=None):
+    if success:
+        return jsonify({"ponto(os): ": pontos}), 200
+    else:
+        return jsonify({'messege': 'o ponto informado não existe!'}), 404
+def remove_favored_spot_presenter(success):
+    if success:
+        return jsonify({'messege': 'ponto removido!'}), 200
+    else:
+        return jsonify({'messege': 'o ponto não foi localizado.'}), 404
