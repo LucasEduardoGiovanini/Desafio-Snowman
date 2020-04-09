@@ -139,7 +139,7 @@ def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuari
         return presenter(False)
 
 CommentVisualizationResponse=['succes','lista_comentarios']
-def ver_comentario_ponto_turistico_logica(nome_ponto,presenter_point,presenter_comment) ->CommentVisualizationResponse:
+def ver_comentario_ponto_turistico_logica(nome_ponto,presenter) ->CommentVisualizationResponse:
 
     repository = PontoTuristicoRepository()
     point_exist = repository.check_existence_of_the_point(nome_ponto)
@@ -147,19 +147,19 @@ def ver_comentario_ponto_turistico_logica(nome_ponto,presenter_point,presenter_c
     if point_exist:
         comments = repository.search_comments(nome_ponto)
         if not comments:
-            return presenter_comment(False)
+            return presenter(False,point_exist)
         else:
             list_comments=list() #os comentários serão inseridos na lista para que retorne com um formato adequado.
             for comment in comments:
                 list_comments.append(comment['descricao'])
-            return presenter_comment(True,list_comments)
+            return presenter(True,point_exist,list_comments)
     else:
-        return presenter_point(False)
+        return presenter(False,point_exist)
 
 
 
 FavoredSpotResponse=['succes','nome_ponto','email_usuario']
-def favoritar_ponto_turistico_logica(nome_ponto,email_usuario,presenter_favored,presenter_point)->FavoredSpotResponse:
+def favoritar_ponto_turistico_logica(nome_ponto,email_usuario,presenter)->FavoredSpotResponse:
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if  point_exists :
@@ -167,13 +167,13 @@ def favoritar_ponto_turistico_logica(nome_ponto,email_usuario,presenter_favored,
         points = repository.search_favorited_spots(email_usuario)
         for ponto in points:
             if ponto['nome'] == nome_ponto:
-                return presenter_favored(False)
+                return presenter(False,point_exists)
 
         result = repository.favorite_tourist_spot(email_usuario, nome_ponto)
         if result:
-            return presenter_favored(True,*result.values())
+            return presenter(True,point_exists,*result.values())
     else:
-        return presenter_point(False)
+        return presenter(False,point_exists)
 
 
 

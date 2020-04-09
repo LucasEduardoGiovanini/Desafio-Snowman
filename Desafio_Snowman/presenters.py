@@ -40,17 +40,21 @@ def category_registration_presenter(success,cod = None,nome=None):
     else:
         return jsonify({'messege': 'A categoria já eixste.'}), 403
 
-def commentary_visualization_presenter(success,list_comments=None):
-    if success:
+def commentary_visualization_presenter(success,point_exist,list_comments=None):
+    if success and point_exist:
         return jsonify({'comentário(s)\n':list_comments}), 200
-    else:
+    elif not success and point_exist:
         return jsonify({'message': 'parece que esse ponto ainda não possui comentários'}), 200
-
-def favored_spot_presenter(success,nome_ponto=None,email_usuario=None):
-    if success:
-        return jsonify({'ponto:': nome_ponto,'criador: ':email_usuario}), 201
     else:
+        return jsonify({'message': 'o ponto informado não existe.'}), 404
+
+def favored_spot_presenter(success,point_exist,nome_ponto=None,email_usuario=None):
+    if success and point_exist:
+        return jsonify({'ponto:': nome_ponto,'criador: ':email_usuario}), 201
+    elif not success and point_exist:
         return jsonify({'messege': 'o ponto já está favoritado'}), 403
+    else:
+        return jsonify({'messege': 'o ponto informado não existe!'}), 404
 
 def see_favored_spot_presenter(success,pontos=None):
     if success:
