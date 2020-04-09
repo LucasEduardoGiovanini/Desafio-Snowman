@@ -112,7 +112,6 @@ def pontos_turisticos_por_nome_logica(ponto,email_usuario,presenter)->SearchPoin
 
 
 def registrar_ponto_turistico_com_categoria(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter_point,presenter_category):
-    create_new_category_if_not_exist(categoria_ponto,presenter_category)
     return registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter_point)
 
 PointCreationResponse = Tuple['Success','nome','laitutde','longitude','categoria','criador']
@@ -200,16 +199,16 @@ def remover_ponto_favoritado_logica(nome_ponto,email_usuario,presenter)->RemoveF
         return presenter(False)
 
 
-
-def upvote_ponto_logica(nome_ponto,email_usuario):
+UpvotePointResponse=['success','nome','quant_upvotes']
+def upvote_ponto_logica(nome_ponto,email_usuario,presenter)->UpvotePointResponse:
 
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if point_exists:
-        repository.register_upvote(nome_ponto)
-        return jsonify({'messege': 'ponto favoritado!'}), 200
+        new_upvote=repository.register_upvote(nome_ponto)
+        return presenter(True,*new_upvote.values())
     else:
-        return jsonify({'messege': 'o ponto informado não existe!'}), 404
+        return presenter(False)
 
 
 

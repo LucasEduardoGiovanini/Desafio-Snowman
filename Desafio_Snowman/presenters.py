@@ -60,3 +60,9 @@ def remove_favored_spot_presenter(success):
         return jsonify({'messege': 'ponto removido!'}), 200
     else:
         return jsonify({'messege': 'o ponto não foi localizado.'}), 404
+
+def upvote_point_presenter(success,nome=None,quant=None):
+    if success:
+        return jsonify({'nome: ':nome,'quantidade_upvotes':quant}), 200
+    else:
+        return jsonify({'message':'O ponto informado não existe.'}),404

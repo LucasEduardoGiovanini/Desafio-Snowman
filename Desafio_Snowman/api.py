@@ -85,7 +85,7 @@ def remover_ponto_favoritado(email_user):
 @auth.token_required
 def upvote_ponto(email_user):
     data = request.json
-    return upvote_ponto_logica(adapter.adapter_name_spot(data),email_user)
+    return upvote_ponto_logica(adapter.adapter_name_spot(data),email_user,presenters.upvote_point_presenter)
 
 @app.route("/users/seetouristspotcreatedbyme", methods=['GET'])
 @auth.token_required
