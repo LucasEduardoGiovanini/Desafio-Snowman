@@ -94,8 +94,8 @@ def ver_pontos_criados_por_mim(email_user):
 
 @app.route("/users/createnewcategorie", methods=['POST'])
 @auth.token_required
-def criar_nova_categoria():
+def criar_nova_categoria(email_user=None):
     data = request.json
-    return create_new_category_if_not_exist(adapter.adapter_category_spot(data))
+    return create_new_category_if_not_exist(adapter.adapter_category_spot(data),presenters.category_registration_presenter)
 
 
