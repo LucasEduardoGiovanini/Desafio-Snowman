@@ -27,12 +27,12 @@ def  one_point_presenter(success,point=None):
         return jsonify({'messege': 'O ponto informado não foi localizado'}), 404
 
 def point_registration_presenter(success,categoria_existe,nome_ponto=None,categoria_ponto=None,latitude_ponto=None,longitude_ponto=None,email_usuario=None):
-    if success:
+    if success and categoria_existe:
         return jsonify({'nome: ': nome_ponto,'categoria: ': categoria_ponto,'latitude: ': latitude_ponto,'longitude: ':longitude_ponto,'criador: ':email_usuario}), 201
-    elif not categoria_existe:
-        return jsonify({'message':'a categoria não existe!'}),404
-    else:
+    elif not success and categoria_existe:
         return jsonify({'messege': 'O ponto já  existe.'}), 403
+    else:
+        return jsonify({'message': 'a categoria não existe!'}), 404
 
 def category_registration_presenter(success,cod = None,nome=None):
     if success:
@@ -72,3 +72,8 @@ def upvote_point_presenter(success,nome=None,quant=None):
         return jsonify({'nome: ':nome,'quantidade_upvotes':quant}), 200
     else:
         return jsonify({'message':'O ponto informado não existe.'}),404
+def see_my_spots_created_presenter(success,points=None):
+    if success:
+        return jsonify({'messege': 'aqui estão seus pontos:', 'ponto(os)': points}), 200
+    else:
+        return jsonify({'messege': 'parece que você não cadastrou nenhum ponto!'}), 200

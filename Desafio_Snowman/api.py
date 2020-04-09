@@ -90,7 +90,7 @@ def upvote_ponto(email_user):
 @app.route("/users/seetouristspotcreatedbyme", methods=['GET'])
 @auth.token_required
 def ver_pontos_criados_por_mim(email_user):
-    return ver_pontos_criados_por_mim_logica(email_user)
+    return ver_pontos_criados_por_mim_logica(email_user,presenters.see_my_spots_created_presenter)
 
 @app.route("/users/createnewcategorie", methods=['POST'])
 @auth.token_required

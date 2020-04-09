@@ -212,14 +212,14 @@ def upvote_ponto_logica(nome_ponto,email_usuario,presenter)->UpvotePointResponse
         return presenter(False)
 
 
-
-def ver_pontos_criados_por_mim_logica(email_usuario):
+SeeMyCreationPointsResponse = ['success','list_points']
+def ver_pontos_criados_por_mim_logica(email_usuario,presenter) -> SeeMyCreationPointsResponse:
     repository = UserRepostory()
     my_points = repository.search_tourist_points_created_by_user(email_usuario)
-    if my_points :
-        return jsonify({'messege': 'aqui estão seus pontos:', 'ponto(os)': my_points}), 200
+    if my_points:
+        return presenter(True,my_points)
     else:
-        return jsonify({'messege': 'parece que você não cadastrou nenhum ponto!'}), 200
+        return presenter(False)
 
 
 CategoryCreationResponse = Tuple['Success','cod','nome_categoria']
