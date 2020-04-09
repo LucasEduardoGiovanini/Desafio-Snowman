@@ -111,8 +111,6 @@ def pontos_turisticos_por_nome_logica(ponto,email_usuario,presenter)->SearchPoin
         return presenter(True,ponto)
 
 
-def registrar_ponto_turistico_com_categoria(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter_point,presenter_category):
-    return registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter_point)
 
 PointCreationResponse = Tuple['Success','nome','laitutde','longitude','categoria','criador']
 def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter)->PointCreationResponse:
@@ -120,12 +118,15 @@ def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,c
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if not point_exists:
         categoria_ponto = categoria_ponto.lower().capitalize()
-        codigo_categoria = repository.check_existence_of_category(categoria_ponto)
-        extract_cod_category = int(codigo_categoria['cod'])
-        point_created=repository.create_tourist_point_and_upvote(nome_ponto, extract_cod_category, latitude_ponto, longitude_ponto, email_usuario)
-        return presenter(True,*point_created.values())
+        category_exist = repository.check_existence_of_category(categoria_ponto)
+        if category_exist:
+            extract_cod_category = int(category_exist['cod'])
+            point_created=repository.create_tourist_point_and_upvote(nome_ponto, extract_cod_category, latitude_ponto, longitude_ponto, email_usuario)
+            return presenter(True,category_exist,*point_created.values())
+        else:
+            return presenter(False,category_exist)
     else:
-        return presenter(False)
+        return presenter(False,True)
 
 CommentCreationResponse = ['criador','nome_ponto','descricao']
 def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuario,presenter)->CommentCreationResponse:
