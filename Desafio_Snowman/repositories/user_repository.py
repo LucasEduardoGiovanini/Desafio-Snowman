@@ -29,7 +29,10 @@ class UserRepostory:
         arguments = (email, password)
         cursor.execute("INSERT INTO tbUsuario (email,senha) VALUES(%s,%s)", arguments)
         self.connection.commit()
-        return True
+        cursor.execute("SELECT email FROM tbUsuario where email=%s", arguments[0])
+        datas = cursor.fetchone()
+        return datas
+
 
     def select_all_favored_spots_from_user(self,email:str):
         cursor = self.connection.cursor()
@@ -39,6 +42,14 @@ class UserRepostory:
         return spots
 
 
+    def favorite_tourist_spot(self,email_usuario:str, nome_ponto:str):
+        cursor = self.connection.cursor()
+        arguments = (nome_ponto,email_usuario)
+        cursor.execute("INSERT INTO tbPontoFavoritado (nome,email) VALUES(%s,%s)", arguments)
+        self.connection.commit()
+        cursor.execute("SELECT * FROM tbPontoFavoritado WHERE  nome=%s and email=%s",arguments)
+        datas = cursor.fetchone()
+        return datas
 
     def search_favorited_spots(self,email:str):
         cursor = self.connection.cursor()
@@ -61,4 +72,3 @@ class UserRepostory:
         cursor.execute("SELECT nome,categoria,latitude,longitude FROM tbPontoTuristico WHERE criador_ponto= %s",arguments)
         result = cursor.fetchall()
         return result
-

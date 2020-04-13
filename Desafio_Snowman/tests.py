@@ -104,7 +104,7 @@ class test_for_tourist_points(unittest.TestCase):
         with app.app_context():
             categoria_ponto = "teste"
             email_usuario = "lucas_giovanini"
-            response = criar_nova_categoria_logica(categoria_ponto,email_usuario)
+            response = create_new_category_if_not_exist(categoria_ponto, email_usuario)
             self.assertEqual(response[1],status.HTTP_200_OK)
 
 

@@ -1,11 +1,12 @@
 
 def adapter_tourist_spot(data):
     nome_ponto = data.get('nome')
+    categoria_ponto = data.get('categoria')
     latitude_ponto = data.get('latitude')
     longitude_ponto = data.get('longitude')
-    categoria_ponto = data.get('categoria')
-    foto_ponto = data.get('foto')
-    return nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,foto_ponto
+
+
+    return nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto
 
 def adapter_user_datas(data):
     email_usuario = data.get('email')

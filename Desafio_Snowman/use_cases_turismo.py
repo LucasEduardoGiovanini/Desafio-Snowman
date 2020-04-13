@@ -8,6 +8,8 @@ import random
 from repositories import PontoTuristicoRepository,UserRepostory
 from http import HTTPStatus
 import auth
+from typing import Tuple
+
 
 
 
@@ -50,144 +52,114 @@ def validar_email_senha_do_usuario(email_usuario,senha_usuario):
 
     return False
 
-
-def login_logica(email_usuario,senha_usuario):
+UserLoginResponse = Tuple['success', 'user_email']
+def login_logica(email_usuario,senha_usuario,presenter) -> UserLoginResponse:
     authorization = validar_email_senha_do_usuario(email_usuario,senha_usuario)
     if authorization:
         repository = UserRepostory()
 
         user_token = auth.create_json_web_token(email_usuario)
-        return jsonify({'token':auth.serializer_token(user_token)})
+        return presenter(True,auth.serializer_token(user_token))
     else:
-        return jsonify({'messege': 'Acesso negado!'}), 401
+        return presenter(False)
 
 
-def registrar_usuario_logica(email_usuario,senha_usuario):
+
+UserRegistrationResponse = Tuple['success', 'user_email'] #dicionário informativo sobre os dados que serão repassados
+def registrar_usuario_logica(email_usuario,senha_usuario,presenter) -> UserRegistrationResponse: #indico o tipo de retorno que essa função vai ter
     encrypted_password = auth.encrypt_password(senha_usuario)
     repository = UserRepostory()
 
     user_already_registered = repository.get_encrypt_password(email_usuario)
 
     if user_already_registered:
-        return jsonify({'messege': 'O usuário já existe'}), 403
+
+        return presenter(False)
     else:
         registered = repository.insert_user(email_usuario, encrypted_password)
-        return jsonify({'messege': 'Usuário cadastrado com sucesso'}), 200
+        return presenter(True,*registered.values()) #retorno todos os dados de registro desmembrados para a respectiva função do presenter .values retorna apenas os valores do json
 
 
-
-def ver_todos_pontos_logica():
+AllPointsResponse = Tuple['success','list_points']
+def ver_todos_pontos_logica(presenter) -> AllPointsResponse:
     repository = PontoTuristicoRepository()
     all_points = repository.search_points()
-    return jsonify({'messege': 'aqui estão os pontos:','ponto(os)':all_points}), 200
+    return presenter(True,all_points)
 
-def pontos_turisticos_5km_logica(latitude_usuario,longitude_usuario,email_user):
+Points5kmResponse = Tuple['success','list_points']
+def pontos_turisticos_5km_logica(latitude_usuario,longitude_usuario,email_user,presenter) ->Points5kmResponse:
     repository = PontoTuristicoRepository()
-    points = repository.search_points()
-    resultado = points
+    resultado = repository.search_points()
     dado = list()
-    for x in resultado:  #como temos varios pontos, preciso percorrer todos, pegar seus dados e compara-los utilizando a formula
-        distancia_km = haversine(float(longitude_usuario), float(latitude_usuario), float(x['longitude']), float(x['latitude']))     # aplico a latitude e longitude dos dois pontos na formula de haversine para obter a distancia em km
+    for ponto in resultado:
+        distancia_km = haversine(float(longitude_usuario), float(latitude_usuario), float(ponto['longitude']), float(ponto['latitude']))     # aplico a latitude e longitude dos dois pontos na formula de haversine para obter a distancia em km
         if (distancia_km <= 5):
-            x['distancia em Km'] = round(distancia_km, 2)
-            dado.append(x)
+            ponto['distancia em Km'] = round(distancia_km, 2)
+            dado.append(ponto)
     if not dado:
-        return jsonify({'resultado': 'nenhum ponto foi encontrado'}), 404
+        return presenter(False)
     else:
-        return jsonify({'resultado ': dado}), 200  # status code http
+        return presenter(True,dado)
 
-
-def pontos_turisticos_por_nome_logica(ponto,email_usuario):
+SearchPointResponse = Tuple['Success','point']
+def pontos_turisticos_por_nome_logica(ponto,email_usuario,presenter)->SearchPointResponse:
     repository = PontoTuristicoRepository()
     ponto = repository.get_ponto_turistico_by_name(ponto)
     if not ponto:
-        return jsonify({'message':'O ponto informado não existe'}),404
+        return presenter(False)
     else:
-        return jsonify({'Pontos':ponto}), 200
+        return presenter(True,ponto)
 
 
-def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,foto_ponto,email_usuario):
 
-    decode_picture = base64.b64decode(foto_ponto)
-
-    categoria_ponto = categoria_ponto.lower().capitalize()
-
+PointCreationResponse = Tuple['Success','nome','laitutde','longitude','categoria','criador']
+def registrar_ponto_turistico_logica(nome_ponto,latitude_ponto,longitude_ponto,categoria_ponto,email_usuario,presenter)->PointCreationResponse:
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
-    if point_exists:
-        return jsonify({'message': 'esse ponto já foi cadastrado!'}), 403
-    else:
+    if not point_exists:
+        categoria_ponto = categoria_ponto.lower().capitalize()
         category_exist = repository.check_existence_of_category(categoria_ponto)
-
-        if not category_exist : #nesse caso eu preciso manter a verificação de booleano, pois preciso obter o falso primeiro, para saber se devo criar essa categoria antes de passar par a proxima condição
-            cod_category = repository.create_category(categoria_ponto)
-            category_exist = repository.check_existence_of_category(categoria_ponto) #solicito novamente a verificação da categoria, para que possa entrar no elif abaixo
-            print(category_exist)
-            jsonify({'Mensagem': 'categoria criada com sucesso!'})
-
         if category_exist:
-             extract_cod_category = int(category_exist['cod'])
-             repository.create_tourist_point_and_upvote(nome_ponto, extract_cod_category, latitude_ponto, longitude_ponto, email_usuario)
+            extract_cod_category = int(category_exist['cod'])
+            point_created=repository.create_tourist_point_and_upvote(nome_ponto, extract_cod_category, latitude_ponto, longitude_ponto, email_usuario)
+            return presenter(True,category_exist,*point_created.values())
+        else:
+            return presenter(False,category_exist)
+    else:
+        return presenter(False,True)
 
-             if foto_ponto:
-                repository.add_picture_spot(foto_ponto,nome_ponto,email_usuario)
-        return jsonify({'messege': 'ponto cadastrado com sucesso!'}), 200
-
-
-def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuario):
-    nome_ponto = data.get('nome')
-    descricao_comentario = data.get('comentario')
-
+CommentCreationResponse = ['criador','nome_ponto','descricao']
+def comentar_ponto_turistico_logica(nome_ponto,descricao_comentario,email_usuario,presenter)->CommentCreationResponse:
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if point_exists :
-        repository.create_comment_about_point(email_usuario, nome_ponto, descricao_comentario)
-        return jsonify({'message': 'comentário cadastrado com sucesso!'}), 200
+        comment = repository.create_comment_about_point(email_usuario, nome_ponto, descricao_comentario)
+        return presenter(True,*comment.values())
     else:
-        return jsonify({'message': 'o ponto informado não existe.'}), 404
+        return presenter(False)
 
-def ver_comentario_ponto_turistico_logica(nome_ponto):
+CommentVisualizationResponse=['succes','lista_comentarios']
+def ver_comentario_ponto_turistico_logica(nome_ponto,presenter) ->CommentVisualizationResponse:
 
     repository = PontoTuristicoRepository()
     point_exist = repository.check_existence_of_the_point(nome_ponto)
-    print(point_exist)
+
     if point_exist:
         comments = repository.search_comments(nome_ponto)
         if not comments:
-            return jsonify({'message': 'parece que esse ponto ainda não possui comentários'}), 200
+            return presenter(False,point_exist)
         else:
             list_comments=list() #os comentários serão inseridos na lista para que retorne com um formato adequado.
             for comment in comments:
                 list_comments.append(comment['descricao'])
-            return jsonify({'comentário(s)\n':list_comments}), 200
+            return presenter(True,point_exist,list_comments)
     else:
-        return jsonify({'message': 'o ponto informado não existe.'}), 404
-
-
-def adicionar_foto_ponto_logica(data,email_usuario):
-    decode_picture = base64.b64decode(foto_ponto)
-    repository = PontoTuristicoRepository()
-    point_exists = repository.check_existence_of_the_point(nome_ponto)
-    if point_exists :
-        repository.add_picture_spot(foto_ponto, nome_ponto, email_usuario)
-        return jsonify({'messege': 'foto cadastrada com sucesso!'}), 200
-    else:
-        return jsonify({'messege': 'o ponto informado não existe!'}), 403
+        return presenter(False,point_exist)
 
 
 
-
-def remover_foto_ponto_logica(data,email_usuario):
-    repository = PontoTuristicoRepository()
-    photo_exist = repository.search_picture(cod_foto)
-    if photo_exist :
-        photo_deleted = repository.delete_picture(cod_foto,email_usuario)
-        return jsonify({'messege': 'foto apagada com sucesso'}), 200
-    else:
-        return jsonify({'messege': 'foto não encontrada'}), 404
-
-
-def favoritar_ponto_turistico_logica(nome_ponto,email_usuario):
+FavoredSpotResponse=['succes','nome_ponto','email_usuario']
+def favoritar_ponto_turistico_logica(nome_ponto,email_usuario,presenter)->FavoredSpotResponse:
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if  point_exists :
@@ -195,75 +167,72 @@ def favoritar_ponto_turistico_logica(nome_ponto,email_usuario):
         points = repository.search_favorited_spots(email_usuario)
         for ponto in points:
             if ponto['nome'] == nome_ponto:
-                return jsonify({'messege': 'o ponto já está favoritado'}), 403
+                return presenter(False,point_exists)
 
         result = repository.favorite_tourist_spot(email_usuario, nome_ponto)
         if result:
-            return jsonify({'messege': 'ponto favoritado com sucesso!'}), 200
+            return presenter(True,point_exists,*result.values())
     else:
-        return jsonify({'messege': 'o ponto informado não existe!'}), 404
+        return presenter(False,point_exists)
 
 
 
-
-def ver_ponto_turistico_favoritado_logica(email_usuario):
+SeeFavoredResponse = ['success','list_points']
+def ver_ponto_turistico_favoritado_logica(email_usuario,presenter) ->SeeFavoredResponse:
     repository = UserRepostory()
     points_favoriteds = repository.search_favorited_spots(email_usuario)
     if points_favoriteds:
-        return jsonify({'Mensagem': 'sucesso! aqui estão seus pontos!', "ponto": points_favoriteds}), 200
+        return presenter(True,points_favoriteds)
     else:
-        return jsonify({'messege': 'o ponto informado não existe!'}), 404
+        return presenter(False)
 
 
 
-
-def remover_ponto_favoritado_logica(nome_ponto,email_usuario):
+RemoveFavoredResponse=['success']
+def remover_ponto_favoritado_logica(nome_ponto,email_usuario,presenter)->RemoveFavoredResponse:
     repository=PontoTuristicoRepository()
     user_favored_this_point = repository.check_who_favored_point(email_usuario,nome_ponto)
     if  user_favored_this_point :
         repository = UserRepostory()
         repository.remove_favorited_tourist_spot(email_usuario, nome_ponto)
-        return jsonify({'messege': 'ponto removido!'}), 200
+        return presenter(True)
     else:
-        return jsonify({'messege': 'o ponto não foi localizado'}), 404
+        return presenter(False)
 
 
-
-
-def upvote_ponto_logica(nome_ponto,email_usuario):
+UpvotePointResponse=['success','nome','quant_upvotes']
+def upvote_ponto_logica(nome_ponto,email_usuario,presenter)->UpvotePointResponse:
 
     repository = PontoTuristicoRepository()
     point_exists = repository.check_existence_of_the_point(nome_ponto)
     if point_exists:
-        repository.register_upvote(nome_ponto)
-        return jsonify({'messege': 'ponto favoritado!'}), 200
+        new_upvote=repository.register_upvote(nome_ponto)
+        return presenter(True,*new_upvote.values())
     else:
-        return jsonify({'messege': 'o ponto informado não existe!'}), 404
+        return presenter(False)
 
 
-
-def ver_pontos_criados_por_mim_logica(email_usuario):
+SeeMyCreationPointsResponse = ['success','list_points']
+def ver_pontos_criados_por_mim_logica(email_usuario,presenter) -> SeeMyCreationPointsResponse:
     repository = UserRepostory()
     my_points = repository.search_tourist_points_created_by_user(email_usuario)
-    if my_points :
-        return jsonify({'messege': 'aqui estão seus pontos:', 'ponto(os)': my_points}), 200
+    if my_points:
+        return presenter(True,my_points)
     else:
-        return jsonify({'messege': 'parece que você não cadastrou nenhum ponto!'}), 200
+        return presenter(False)
 
 
-
-
-def criar_nova_categoria_logica(nome_categoria):
+CategoryCreationResponse = Tuple['Success','cod','nome_categoria']
+def create_new_category_if_not_exist(nome_categoria,presenter)->CategoryCreationResponse:
     nome_categoria=nome_categoria.lower().capitalize()
-
     repository = PontoTuristicoRepository()
     category_exist=repository.check_existence_of_category(nome_categoria)
 
     if  category_exist:
-        return jsonify({'messege': 'essa categoria já existe.'}), 403
+        return presenter(False)
     else:
-        repository.create_category(nome_categoria)
-        return jsonify({'messege': 'categoria criada com sucesso!'}), 200
+        new_category = repository.create_category(nome_categoria)
+        return presenter(True,*new_category.values())
 
 
 
