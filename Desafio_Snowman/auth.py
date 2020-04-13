@@ -4,6 +4,7 @@ import os
 from functools import wraps
 secret_key = os.urandom(16)
 import use_cases_turismo
+from repositories import UserRepostory
 
 
 def encrypt_password(password:str):
@@ -38,7 +39,7 @@ def token_required(f):
         try:
             token =decode_json_web_token(access_token)
             email_user = token['email']
-            user_validate = use_cases_turismo.checar_usuario_existe(email_user)
+            user_validate =checar_usuario_existe(email_user)
             if not user_validate:
                 return jsonify({'message': 'o usuário não é mais válido!'}), 401
         except:
@@ -49,5 +50,19 @@ def token_required(f):
     return decorated
 
 
+def checar_usuario_existe(email_usuario):
+    repository = UserRepostory()
+    check_existance_of_user = repository.verify_email(email_usuario)
+    return True if check_existance_of_user == True else False
 
+
+def validar_email_senha_do_usuario(email_usuario,senha_usuario):
+    repository = UserRepostory()
+    encrypted_password = repository.get_encrypt_password(email_usuario)
+
+    if encrypted_password:
+        approved_password = validate_user_password(senha_usuario,encrypted_password)
+        if approved_password:
+            return True
+    return False
 
