@@ -35,26 +35,11 @@ def escreve_imagem(data):
             q.write(imagem)
 
 
-def checar_usuario_existe(email_usuario):
-    repository = UserRepostory()
-    check_existance_of_user = repository.verify_email(email_usuario)
-    return True if check_existance_of_user == True else False
 
-
-def validar_email_senha_do_usuario(email_usuario,senha_usuario):
-    repository = UserRepostory()
-    encrypted_password = repository.get_encrypt_password(email_usuario)
-
-    if encrypted_password:
-        approved_password = auth.validate_user_password(senha_usuario,encrypted_password)
-        if approved_password:
-            return True
-
-    return False
 
 UserLoginResponse = Tuple['success', 'user_email']
 def login_logica(email_usuario,senha_usuario,presenter) -> UserLoginResponse:
-    authorization = validar_email_senha_do_usuario(email_usuario,senha_usuario)
+    authorization = auth.validar_email_senha_do_usuario(email_usuario,senha_usuario)
     if authorization:
         repository = UserRepostory()
 
